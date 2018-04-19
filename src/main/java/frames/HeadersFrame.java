@@ -100,6 +100,9 @@ import static frames.FrameType.HEADERS;
  * potential for churn in stream prioritization when new streams are
  * created.  Prioritization fields in HEADERS frames subsequent to the
  * first on a stream reprioritize the stream (Section 5.3.3).
+ *
+ * @author Rolv-Arild Braaten
+ * @see frames.Frame
  */
 public class HeadersFrame extends Frame {
 
@@ -117,6 +120,8 @@ public class HeadersFrame extends Frame {
      *                            This field is only present if the PADDED flag is set.
      * @param headerBlockFragment A header block fragment.
      * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
+     * @param streamId            A stream Id expressed as an unsigned 31-bit integer.
+     *                            The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param endStream           When set, bit 0 indicates that the header block is the last that the endpoint will send for the identified stream.
      */
     public HeadersFrame(boolean endStream, boolean endHeaders, byte padLength, int streamId, ByteBuffer headerBlockFragment) {
@@ -145,6 +150,8 @@ public class HeadersFrame extends Frame {
      *                            This field is only present if the PRIORITY flag is set.
      * @param weight              An unsigned 8-bit integer representing a priority weight for the stream.
      *                            Add one to the value to obtain a weight between 1 and 256. This field is only present if the PRIORITY flag is set.
+     * @param streamId            A stream Id expressed as an unsigned 31-bit integer.
+     *                            The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param headerBlockFragment The payload of this frame.
      * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
      * @param endStream           When set, bit 0 indicates that the header block is the last that the endpoint will send for the identified stream.

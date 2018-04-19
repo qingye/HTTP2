@@ -67,6 +67,9 @@ import static frames.FrameType.WINDOW_UPDATE;
  * A WINDOW_UPDATE frame with a length other than 4 octets MUST be
  * treated as a connection error (Section 5.4.1) of type
  * FRAME_SIZE_ERROR.
+ *
+ * @author Rolv-Arild Braaten
+ * @see frames.Frame
  */
 public class WindowUpdateFrame extends Frame {
 

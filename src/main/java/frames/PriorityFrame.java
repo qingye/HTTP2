@@ -52,6 +52,9 @@ import static frames.FrameType.PRIORITY;
  * <p>
  * A PRIORITY frame with a length other than 5 octets MUST be treated as
  * a stream error (Section 5.4.2) of type FRAME_SIZE_ERROR.
+ *
+ * @author Rolv-Arild Braaten
+ * @see frames.Frame
  */
 public class PriorityFrame extends Frame {
 

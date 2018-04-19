@@ -42,6 +42,9 @@ import static frames.FrameType.RST_STREAM;
  * <p>
  * A RST_STREAM frame with a length other than 4 octets MUST be treated
  * as a connection error (Section 5.4.1) of type FRAME_SIZE_ERROR.
+ *
+ * @author Rolv-Arild Braaten
+ * @see frames.Frame
  */
 public class RSTStreamFrame extends Frame {
 

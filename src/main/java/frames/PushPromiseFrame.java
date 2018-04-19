@@ -106,6 +106,9 @@ import static frames.FrameType.PUSH_PROMISE;
  * <p>
  * The PUSH_PROMISE frame can include padding.  Padding fields and flags
  * are identical to those defined for DATA frames (Section 6.1).
+ *
+ * @author Rolv-Arild Braaten
+ * @see frames.Frame
  */
 public class PushPromiseFrame extends Frame {
 
@@ -126,6 +129,7 @@ public class PushPromiseFrame extends Frame {
      * @param streamId            A stream Id expressed as an unsigned 31-bit integer.
      *                            The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param headerBlockFragment A header block fragment containing request header fields.
+     * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
      */
     public PushPromiseFrame(byte padLength, int promisedStreamID, int flags, int streamId, ByteBuffer headerBlockFragment, boolean endHeaders) {
         super(5 + headerBlockFragment.position() + padLength, PUSH_PROMISE, combine((padLength != 0) ? PADDED : 0, (endHeaders ? END_HEADERS : 0)), streamId);

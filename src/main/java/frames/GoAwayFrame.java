@@ -134,6 +134,9 @@ import static frames.FrameType.GOAWAY;
  * or privacy-sensitive data.  Logged or otherwise persistently stored
  * debug data MUST have adequate safeguards to prevent unauthorized
  * access.
+ *
+ * @author Rolv-Arild Braaten
+ * @see frames.Frame
  */
 public class GoAwayFrame extends Frame {
 

@@ -2,6 +2,8 @@ package frames;
 
 /**
  * Flag constants and operations
+ *
+ * @author Rolv-Arild Braaten
  */
 class Flags {
 

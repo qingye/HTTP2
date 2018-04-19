@@ -47,6 +47,8 @@ import static frames.FrameType.PING;
  * The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
  * <p>
  * The structure and content of the frame payload is dependent entirely on the frame type.
+ *
+ * @author Rolv-Arild Braaten
  */
 abstract class Frame {
 

@@ -3,6 +3,12 @@ package frames;
 import static frames.ErrorCode.FLOW_CONTROL_ERROR;
 import static frames.ErrorCode.PROTOCOL_ERROR;
 
+/**
+ * Settings for settings frames
+ *
+ * @author Rolv-Arild Braaten
+ * @see frames.SettingsFrame
+ */
 public enum Settings {
     /**
      * SETTINGS_HEADER_TABLE_SIZE (0x1):  Allows the sender to inform the

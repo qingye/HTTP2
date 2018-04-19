@@ -2,6 +2,8 @@ package frames;
 
 /**
  * All errors and their corresponding codes
+ *
+ * @author Rolv-Arild Braaten
  */
 public enum ErrorCode {
     /**

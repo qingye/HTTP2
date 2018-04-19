@@ -35,6 +35,9 @@ import static frames.FrameType.DATA;
  * Data:  Application data.  The amount of data is the remainder of the
  * frame payload after subtracting the length of the other fields
  * that are present.
+ *
+ * @author Rolv-Arild Braaten
+ * @see frames.Frame
  */
 public class DataFrame extends Frame {
 

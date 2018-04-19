@@ -43,6 +43,9 @@ import static frames.FrameType.CONTINUATION;
  * CONTINUATION frame without the END_HEADERS flag set.  A recipient
  * that observes violation of this rule MUST respond with a connection
  * error (Section 5.4.1) of type PROTOCOL_ERROR.
+ *
+ * @author Rolv-Arild Braaten
+ * @see frames.Frame
  */
 public class ContinuationFrame extends Frame {
 

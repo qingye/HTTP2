@@ -44,6 +44,9 @@ import static frames.FrameType.PING;
  * Receipt of a PING frame with a length field value other than 8 MUST
  * be treated as a connection error (Section 5.4.1) of type
  * FRAME_SIZE_ERROR.
+ *
+ * @author Rolv-Arild Braaten
+ * @see frames.Frame
  */
 public class PingFrame extends Frame {
 
