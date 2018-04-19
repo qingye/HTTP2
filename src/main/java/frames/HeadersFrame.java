@@ -12,7 +12,8 @@ import static frames.FrameType.HEADERS;
  * and additionally carries a header block fragment.  HEADERS frames can
  * be sent on a stream in the "idle", "reserved (local)", "open", or
  * "half-closed (remote)" state.
- * <p>
+ * <pre>
+ * {@code
  * +---------------+
  * |Pad Length? (8)|
  * +-+-------------+-----------------------------------------------+
@@ -24,7 +25,8 @@ import static frames.FrameType.HEADERS;
  * +---------------------------------------------------------------+
  * |                           Padding (*)                       ...
  * +---------------------------------------------------------------+
- * <p>
+ * }
+ * </pre>
  * Figure 7: HEADERS Frame Payload
  * <p>
  * The HEADERS frame payload has the following fields:

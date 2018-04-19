@@ -13,7 +13,8 @@ import static frames.FrameType.PUSH_PROMISE;
  * stream the endpoint plans to create along with a set of headers that
  * provide additional context for the stream.  Section 8.2 contains a
  * thorough description of the use of PUSH_PROMISE frames.
- * <p>
+ * <pre>
+ * {@code
  * +---------------+
  * |Pad Length? (8)|
  * +-+-------------+-----------------------------------------------+
@@ -23,7 +24,8 @@ import static frames.FrameType.PUSH_PROMISE;
  * +---------------------------------------------------------------+
  * |                           Padding (*)                       ...
  * +---------------------------------------------------------------+
- * <p>
+ * }
+ * </pre>
  * Figure 11: PUSH_PROMISE Payload Format
  * <p>
  * The PUSH_PROMISE frame payload has the following fields:

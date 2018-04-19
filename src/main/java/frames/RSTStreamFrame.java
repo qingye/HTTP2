@@ -9,11 +9,13 @@ import static frames.FrameType.RST_STREAM;
  * The RST_STREAM frame (type=0x3) allows for immediate termination of a
  * stream.  RST_STREAM is sent to request cancellation of a stream or to
  * indicate that an error condition has occurred.
- * <p>
+ * <pre>
+ * {@code
  * +---------------------------------------------------------------+
  * |                        Error Code (32)                        |
  * +---------------------------------------------------------------+
- * <p>
+ * }
+ * </pre>
  * Figure 9: RST_STREAM Frame Payload
  * <p>
  * The RST_STREAM frame contains a single unsigned, 32-bit integer

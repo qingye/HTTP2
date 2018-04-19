@@ -7,7 +7,9 @@ import static frames.FrameType.PING;
 
 /**
  * All frames begin with a fixed 9-octet header followed by a variable-length payload.
- * <p>
+ *
+ * <pre>
+ * {@code
  * +-----------------------------------------------+
  * |                 Length (24)                   |
  * +---------------+---------------+---------------+
@@ -17,6 +19,8 @@ import static frames.FrameType.PING;
  * +=+=============================================================+
  * |                   Frame Payload (0...)                      ...
  * +---------------------------------------------------------------+
+ * }
+ * </pre>
  * Figure 1: Frame Layout
  * <p>
  * The fields of the frame header are defined as:

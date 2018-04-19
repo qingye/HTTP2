@@ -12,13 +12,15 @@ import static frames.FrameType.PING;
  * round-trip time from the sender, as well as determining whether an
  * idle connection is still functional.  PING frames can be sent from
  * any endpoint.
- * <p>
+ * <pre>
+ * {@code
  * +---------------------------------------------------------------+
  * |                                                               |
  * |                      Opaque Data (64)                         |
  * |                                                               |
  * +---------------------------------------------------------------+
- * <p>
+ * }
+ * </pre>
  * Figure 12: PING Payload Format
  * <p>
  * In addition to the frame header, PING frames MUST contain 8 octets of

@@ -48,7 +48,8 @@ import static frames.FrameType.GOAWAY;
  * connection; a receiver of a GOAWAY that has no more use for the
  * connection SHOULD still send a GOAWAY frame before terminating the
  * connection.
- * <p>
+ * <pre>
+ * {@code
  * +-+-------------------------------------------------------------+
  * |R|                  Last-Stream-ID (31)                        |
  * +-+-------------------------------------------------------------+
@@ -56,7 +57,8 @@ import static frames.FrameType.GOAWAY;
  * +---------------------------------------------------------------+
  * |                  Additional Debug Data (*)                    |
  * +---------------------------------------------------------------+
- * <p>
+ * }
+ * </pre>
  * Figure 13: GOAWAY Payload Format
  * <p>
  * The GOAWAY frame does not define any flags.

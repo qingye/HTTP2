@@ -11,11 +11,13 @@ import static frames.FrameType.CONTINUATION;
  * frames can be sent, as long as the preceding frame is on the same
  * stream and is a HEADERS, PUSH_PROMISE, or CONTINUATION frame without
  * the END_HEADERS flag set.
- * <p>
+ * <pre>
+ * {@code
  * +---------------------------------------------------------------+
  * |                   Header Block Fragment (*)                 ...
  * +---------------------------------------------------------------+
- * <p>
+ * }
+ * </pre>
  * Figure 15: CONTINUATION Frame Payload
  * <p>
  * The CONTINUATION frame payload contains a header block fragment

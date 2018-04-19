@@ -26,11 +26,13 @@ import static frames.FrameType.WINDOW_UPDATE;
  * respond with a stream error (Section 5.4.2) or connection error
  * (Section 5.4.1) of type FLOW_CONTROL_ERROR if it is unable to accept
  * a frame.
- * <p>
+ * <pre>
+ * {@code
  * +-+-------------------------------------------------------------+
  * |R|              Window Size Increment (31)                     |
  * +-+-------------------------------------------------------------+
- * <p>
+ * }
+ * </pre>
  * Figure 14: WINDOW_UPDATE Payload Format
  * <p>
  * The payload of a WINDOW_UPDATE frame is one reserved bit plus an

@@ -8,13 +8,15 @@ import static frames.FrameType.PRIORITY;
  * The PRIORITY frame (type=0x2) specifies the sender-advised priority
  * of a stream (Section 5.3).  It can be sent in any stream state,
  * including idle or closed streams.
- * <p>
+ * <pre>
+ * {@code
  * +-+-------------------------------------------------------------+
  * |E|                  Stream Dependency (31)                     |
  * +-+-------------+-----------------------------------------------+
  * |   Weight (8)  |
  * +-+-------------+
- * <p>
+ * }
+ * </pre>
  * Figure 8: PRIORITY Frame Payload
  * <p>
  * The payload of a PRIORITY frame contains the following fields:

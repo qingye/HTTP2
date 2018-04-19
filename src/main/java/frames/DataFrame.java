@@ -14,7 +14,8 @@ import static frames.FrameType.DATA;
  * DATA frames MAY also contain padding.  Padding can be added to DATA
  * frames to obscure the size of messages.  Padding is a security
  * feature; see Section 10.7.
- * <p>
+ * <pre>
+ * {@code
  * +---------------+
  * |Pad Length? (8)|
  * +---------------+-----------------------------------------------+
@@ -22,7 +23,8 @@ import static frames.FrameType.DATA;
  * +---------------------------------------------------------------+
  * |                           Padding (*)                       ...
  * +---------------------------------------------------------------+
- * <p>
+ * }
+ * </pre>
  * Figure 6: DATA Frame Payload
  * <p>
  * The DATA frame contains the following fields:
