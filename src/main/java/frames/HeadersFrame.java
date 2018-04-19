@@ -3,6 +3,8 @@ package frames;
 import java.nio.ByteBuffer;
 
 import static frames.ErrorCode.*;
+import static frames.Flags.*;
+import static frames.Flags.PRIORITY;
 import static frames.FrameType.*;
 
 
@@ -81,15 +83,11 @@ import static frames.FrameType.*;
  */
 public class HeadersFrame extends Frame {
 
-    private static final byte END_STREAM = 0x1;
-    private static final byte END_HEADERS = 0x4;
-    private static final byte PADDED = 0x8;
-    private static final byte PRIORITY = 0x20;
-
     private int streamDependency = -1;
     private byte padLength;
     private boolean E = false;
     private byte weight = -1;
+    private ByteBuffer headerBlockFragment;
 
 
     /**
@@ -102,15 +100,18 @@ public class HeadersFrame extends Frame {
      * @param endStream           When set, bit 0 indicates that the header block is the last that the endpoint will send for the identified stream.
      */
     public HeadersFrame(boolean endStream, boolean endHeaders, byte padLength, int streamId, ByteBuffer headerBlockFragment) {
-        super(HEADERS, (endStream ? END_STREAM : 0) | (endHeaders ? END_HEADERS : 0) | ((padLength == 0) ? 0 : PADDED), streamId, headerBlockFragment); // TODO format payload
+        super(6 + headerBlockFragment.position() + padLength, HEADERS, combine((endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)), streamId);
         if (streamId == 0) {
             throw PROTOCOL_ERROR.error();
         }
         if (padLength > payloadLength()) {
             throw PROTOCOL_ERROR.error();
         }
-
+        if (streamDependency < 0) {
+            throw new IllegalArgumentException("Invalid stream dependency");
+        }
         this.padLength = padLength;
+        this.headerBlockFragment = headerBlockFragment;
     }
 
     /**
@@ -135,5 +136,16 @@ public class HeadersFrame extends Frame {
         this.padLength = padLength;
         this.E = E;
         this.weight = weight;
+    }
+
+    @Override
+    public ByteBuffer payload() {
+        ByteBuffer out = ByteBuffer.allocate(length);
+        out.put(padLength);
+        out.putInt(E ? streamDependency & -2147483648 : streamDependency); // -2147483648 is only the first bit
+        out.put(weight);
+        out.put(headerBlockFragment);
+        out.put(ByteBuffer.allocate(padLength));
+        return out;
     }
 }

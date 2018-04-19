@@ -2,9 +2,12 @@ package frames;
 
 import java.nio.ByteBuffer;
 
+import static frames.Flags.ACK;
 import static frames.FrameType.*;
 
 /**
+ * https://http2.github.io/http2-spec/#rfc.section.6.5
+ *
  * The SETTINGS frame (type=0x4) conveys configuration parameters that affect how endpoints communicate,
  * such as preferences and constraints on peer behavior.
  * The SETTINGS frame is also used to acknowledge the receipt of those parameters.
@@ -46,8 +49,6 @@ import static frames.FrameType.*;
  */
 public class SettingsFrame extends Frame {
 
-    private static final byte ACK = 0x1;
-
     /**
      * Constructs a settings frame
      *
@@ -55,7 +56,13 @@ public class SettingsFrame extends Frame {
      *            When this bit is set, the payload of the SETTINGS frame MUST be empty.
      */
     public SettingsFrame(boolean ack) {
-        super(SETTINGS, (ack ? ACK : 0), 0, null); // TODO format payload, parameter for settings
+        super(0, SETTINGS, (ack ? ACK : 0), 0); // TODO format payload, parameter for settings
         // TODO ensure payload is a multiple of 6 octets
+    }
+
+    @Override
+    public ByteBuffer payload() {
+        ByteBuffer out = ByteBuffer.allocate(length);
+        return null;
     }
 }

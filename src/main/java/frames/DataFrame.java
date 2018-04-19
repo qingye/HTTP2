@@ -3,11 +3,14 @@ package frames;
 import java.nio.ByteBuffer;
 
 import static frames.ErrorCode.*;
+import static frames.Flags.END_STREAM;
+import static frames.Flags.PADDED;
+import static frames.Flags.combine;
 import static frames.FrameType.*;
 
 /**
  * https://http2.github.io/http2-spec/#rfc.section.6.1
- *
+ * <p>
  * DATA frames (type=0x0) convey arbitrary, variable-length sequences of octets associated with a stream.
  * One or more DATA frames are used, for instance, to carry HTTP request or response payloads.
  * <p>
@@ -56,10 +59,8 @@ import static frames.FrameType.*;
  */
 public class DataFrame extends Frame {
 
-    private static final byte END_STREAM = 0x1;
-    private static final byte PADDED = 0x8;
-
     public byte padLength;
+    private ByteBuffer data;
 
     /**
      * Constructs a data frame.
@@ -73,13 +74,14 @@ public class DataFrame extends Frame {
      *                  Setting this flag causes the stream to enter one of the "half-closed" states or the "closed" state.
      */
     public DataFrame(int streamId, ByteBuffer data, byte padLength, boolean endStream) {
-        super(DATA, (endStream ? END_STREAM : 0) | ((padLength == 0) ? 0 : PADDED), streamId, data); // TODO add padLength field and pad data before sending it as payload parameter
+        super(4 + data.position() + padLength, DATA, combine((endStream ? END_STREAM : 0), (padLength == 0) ? 0 : PADDED), streamId);
         if (streamId == 0) {
             throw PROTOCOL_ERROR.error();
         }
         if (padLength > payloadLength()) {
             throw PROTOCOL_ERROR.error();
         }
+        this.data = data;
         // TODO if a DATA frame is received whose stream is not in "open" or "half-closed (local)" state, the recipient MUST respond with a stream error (Section 5.4.2) of type STREAM_CLOSED.
         this.padLength = padLength;
     }
@@ -95,5 +97,14 @@ public class DataFrame extends Frame {
      */
     public DataFrame(int streamId, ByteBuffer payload, boolean endStream) {
         this(streamId, payload, (byte) 0, endStream);
+    }
+
+    @Override
+    public ByteBuffer payload() {
+        ByteBuffer out = ByteBuffer.allocate(length);
+        out.put(padLength);
+        out.put(data);
+        out.put(ByteBuffer.allocate(padLength));
+        return out;
     }
 }

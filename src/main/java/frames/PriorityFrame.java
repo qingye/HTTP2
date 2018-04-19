@@ -60,9 +60,20 @@ public class PriorityFrame extends Frame {
      *                         The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      */
     public PriorityFrame(boolean E, int streamDependency, byte weight, int streamId) {
-        super(PRIORITY, 0, streamId, null); // TODO create payload
+        super(5, PRIORITY, streamId);
+        if (streamDependency < 0) {
+            throw new IllegalArgumentException("Invalid stream dependency");
+        }
         this.E = E;
         this.streamDependency = streamDependency;
         this.weight = weight;
+    }
+
+    @Override
+    public ByteBuffer payload() {
+        ByteBuffer out = ByteBuffer.allocate(length);
+        out.putInt(E ? streamDependency & -2147483648 : streamDependency); // -2147483648 is only the first bit
+        out.put(weight);
+        return out;
     }
 }

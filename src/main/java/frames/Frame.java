@@ -2,6 +2,9 @@ package frames;
 
 import java.nio.ByteBuffer;
 
+import static frames.ErrorCode.FRAME_SIZE_ERROR;
+import static frames.FrameType.PING;
+
 /**
  * https://http2.github.io/http2-spec/#rfc.section.4.1
  * <p>
@@ -10,7 +13,7 @@ import java.nio.ByteBuffer;
  * +-----------------------------------------------+
  * |                 Length (24)                   |
  * +---------------+---------------+---------------+
- * |   Type (8)    |   Flags (8)   |
+ * |   Type (8)    |   Flag (8)   |
  * +-+-------------+---------------+-------------------------------+
  * |R|                 Stream Identifier (31)                      |
  * +=+=============================================================+
@@ -30,11 +33,11 @@ import java.nio.ByteBuffer;
  * The 8-bit type of the frame. The frame type determines the format and semantics of the frame.
  * Implementations MUST ignore and discard any frame that has a type that is unknown.
  * <p>
- * Flags:
+ * Flag:
  * An 8-bit field reserved for boolean flags specific to the frame type.
  * <p>
- * Flags are assigned semantics specific to the indicated frame type.
- * Flags that have no defined semantics for a particular frame type MUST be ignored and MUST be left unset (0x0) when sending.
+ * Flag are assigned semantics specific to the indicated frame type.
+ * Flag that have no defined semantics for a particular frame type MUST be ignored and MUST be left unset (0x0) when sending.
  * <p>
  * R:
  * A reserved 1-bit field.
@@ -49,44 +52,79 @@ import java.nio.ByteBuffer;
  */
 abstract class Frame {
 
-    Header header; // contains the header info
-    private ByteBuffer payload; // contains the payload
+    private static final int MAX_LENGTH = 16777216; // 2^24
+    private static int SETTINGS_MAX_FRAME_SIZE = 16384;
+
+    int length;
+    final FrameType type;
+    byte flags;
+    int streamId;
 
     /**
-     * Constructs a frame
+     * Constructs a frame header
      *
+     * @param length   The length of the frame payload expressed as an unsigned 24-bit integer.
+     *                 Values greater than 214 (16,384) MUST NOT be sent unless the receiver has set a larger value for SETTINGS_MAX_FRAME_SIZE.
      * @param type     The 8-bit type of the frame.
-     *                 The frame type determines the format and semantics of the frame.
-     *                 Implementations MUST ignore and discard any frame that has a type that is unknown.
+     *                 The frame type determines the format and semantics of the frame. Implementations MUST ignore and discard any frame that has a type that is unknown.
      * @param flags    An 8-bit field reserved for boolean flags specific to the frame type.
-     *                 Flags are assigned semantics specific to the indicated frame type.
-     *                 Flags that have no defined semantics for a particular frame type MUST be ignored and MUST be left unset (0x0) when sending.
+     *                 Flag are assigned semantics specific to the indicated frame type. Flag that have no defined semantics for a particular frame type MUST be ignored and MUST be left unset (0x0) when sending.
      * @param streamId A stream Id expressed as an unsigned 31-bit integer.
      *                 The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
-     * @param payload  The payload of this frame. The structure and content of the frame payload is dependent entirely on the frame type.
      */
-    Frame(FrameType type, int flags, int streamId, ByteBuffer payload) {
-        this.header = new Header(((payload == null) ? 0 : payload.position()), type, (byte) flags, streamId);
-        this.payload = payload;
+    Frame(int length, FrameType type, byte flags, int streamId) {
+        if (length < 0 || length > SETTINGS_MAX_FRAME_SIZE || length > MAX_LENGTH) {
+            throw FRAME_SIZE_ERROR.error();
+        } else if (type == PING && length != 8) {
+            throw FRAME_SIZE_ERROR.error();
+        }
+        if (streamId < 0) throw new IllegalArgumentException("Invalid stream");
+        this.length = length;
+        this.type = type;
+        this.flags = flags;
+        this.streamId = streamId;
+    }
+
+    Frame(int length, FrameType type, int streamId) {
+        this(length, type, (byte) 0, streamId);
+    }
+
+    /**
+     * @return A ByteBuffer containing the payload of this frame.
+     */
+    public abstract ByteBuffer payload();
+
+    /**
+     * @return A ByteBuffer containing all the information of this frame.
+     */
+    public ByteBuffer bytes() {
+        ByteBuffer out = ByteBuffer.allocate(9 + length);
+        out.putShort((short) (length >> 8));
+        out.put((byte) (length & 0xff));
+        out.put(type.code);
+        out.put(flags);
+        out.putInt(streamId);
+        out.put(payload());
+        return out;
     }
 
     int payloadLength() {
-        return header.length;
+        return length;
     }
 
     FrameType getType() {
-        return header.type;
+        return type;
     }
 
     void setStreamId(int streamId) {
-        header.streamId = streamId;
+        this.streamId = streamId;
     }
 
     void addFlag(byte flag) {
-        header.flags |= flag;
+        flags |= flag;
     }
 
     void removeFlag(byte flag) {
-        header.flags &= flag ^ 0xff;
+        flags &= flag ^ 0xff;
     }
 }

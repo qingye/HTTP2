@@ -6,6 +6,8 @@ import static frames.ErrorCode.*;
 import static frames.FrameType.*;
 
 /**
+ * https://http2.github.io/http2-spec/#rfc.section.6.4
+ *
  * The RST_STREAM frame (type=0x3) allows for immediate termination of a stream.
  * RST_STREAM is sent to request cancellation of a stream or to indicate that an error condition has occurred.
  * <p>
@@ -49,10 +51,17 @@ public class RSTStreamFrame extends Frame {
      *                  the recipient MUST treat this as a connection error
      */
     public RSTStreamFrame(ErrorCode errorCode, int streamId) {
-        super(RST_STREAM, 0, streamId, null); // TODO format payload
+        super(4, RST_STREAM, streamId);
         if (streamId == 0) {
             throw PROTOCOL_ERROR.error();
         }
         this.errorCode = errorCode;
+    }
+
+    @Override
+    public ByteBuffer payload() {
+        ByteBuffer out = ByteBuffer.allocate(length);
+        out.putInt(errorCode.code);
+        return out;
     }
 }
