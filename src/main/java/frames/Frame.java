@@ -6,8 +6,6 @@ import static frames.ErrorCode.FRAME_SIZE_ERROR;
 import static frames.FrameType.PING;
 
 /**
- * https://http2.github.io/http2-spec/#rfc.section.4.1
- * <p>
  * All frames begin with a fixed 9-octet header followed by a variable-length payload.
  * <p>
  * +-----------------------------------------------+
@@ -54,9 +52,8 @@ abstract class Frame {
 
     private static final int MAX_LENGTH = 16777216; // 2^24
     private static int SETTINGS_MAX_FRAME_SIZE = 16384;
-
-    int length;
     final FrameType type;
+    int length;
     byte flags;
     int streamId;
 

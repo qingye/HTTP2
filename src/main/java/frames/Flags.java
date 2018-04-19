@@ -1,5 +1,8 @@
 package frames;
 
+/**
+ * Flag constants and operations
+ */
 class Flags {
 
     static final byte ACK = 0x1;
