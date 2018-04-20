@@ -11,7 +11,7 @@ import static frames.FrameType.PRIORITY;
  * <pre>
  * {@code
  * +-+-------------------------------------------------------------+
- * |E|                  Stream Dependency (31)                     |
+ * |E|                  streams.Stream Dependency (31)                     |
  * +-+-------------+-----------------------------------------------+
  * |   Weight (8)  |
  * +-+-------------+
@@ -24,7 +24,7 @@ import static frames.FrameType.PRIORITY;
  * E: A single-bit flag indicating that the stream dependency is
  * exclusive (see Section 5.3).
  * <p>
- * Stream Dependency:  A 31-bit stream identifier for the stream that
+ * streams.Stream Dependency:  A 31-bit stream identifier for the stream that
  * this stream depends on (see Section 5.3).
  * <p>
  * Weight:  An unsigned 8-bit integer representing a priority weight for
@@ -72,11 +72,9 @@ public class PriorityFrame extends Frame {
      * @param streamDependency A 31-bit stream identifier for the stream that this stream depends on.
      * @param weight           An unsigned 8-bit integer representing a priority weight for the stream.
      *                         Add one to the value to obtain a weight between 1 and 256.
-     * @param streamId         A stream Id expressed as an unsigned 31-bit integer.
-     *                         The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      */
-    public PriorityFrame(boolean E, int streamDependency, byte weight, int streamId) {
-        super(5, PRIORITY, streamId);
+    public PriorityFrame(boolean E, int streamDependency, byte weight) {
+        super(5, PRIORITY);
         if (streamDependency < 0) {
             throw new IllegalArgumentException("Invalid stream dependency");
         }

@@ -49,19 +49,14 @@ public class DataFrame extends Frame {
     /**
      * Constructs a data frame.
      *
-     * @param streamId  A stream Id expressed as an unsigned 31-bit integer.
-     *                  The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param data      The payload of this data frame.
      * @param padLength An 8-bit field containing the length of the frame padding in units of octets.
      *                  The PADDED flag is set if this parameter is not 0.
      * @param endStream When set, bit 0 indicates that this frame is the last that the endpoint will send for the identified stream.
      *                  Setting this flag causes the stream to enter one of the "half-closed" states or the "closed" state.
      */
-    public DataFrame(int streamId, ByteBuffer data, byte padLength, boolean endStream) {
-        super(4 + data.position() + padLength, DATA, combine((endStream ? END_STREAM : 0), (padLength == 0) ? 0 : PADDED), streamId);
-        if (streamId == 0) {
-            throw PROTOCOL_ERROR.error();
-        }
+    public DataFrame(ByteBuffer data, byte padLength, boolean endStream) {
+        super(4 + data.position() + padLength, DATA, combine((endStream ? END_STREAM : 0), (padLength == 0) ? 0 : PADDED));
         if (padLength > payloadLength()) {
             throw PROTOCOL_ERROR.error();
         }
@@ -73,14 +68,12 @@ public class DataFrame extends Frame {
     /**
      * Constructs a data frame with no padding.
      *
-     * @param streamId  A stream Id expressed as an unsigned 31-bit integer.
-     *                  The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param payload   The payload of this data frame
      * @param endStream When set, bit 0 indicates that this frame is the last that the endpoint will send for the identified stream.
      *                  Setting this flag causes the stream to enter one of the "half-closed" states or the "closed" state.
      */
-    public DataFrame(int streamId, ByteBuffer payload, boolean endStream) {
-        this(streamId, payload, (byte) 0, endStream);
+    public DataFrame(ByteBuffer payload, boolean endStream) {
+        this(payload, (byte) 0, endStream);
     }
 
     @Override

@@ -43,7 +43,7 @@ public enum ErrorCode {
      * STREAM_CLOSED (0x5):  The endpoint received a frame after a stream
      * was half-closed.
      */
-    STREAM_CLOSED(0x5, "Stream closed"),
+    STREAM_CLOSED(0x5, "streams.Stream closed"),
 
     /**
      * FRAME_SIZE_ERROR (0x6):  The endpoint received a frame with an

@@ -6,7 +6,7 @@ package frames;
  * @author Rolv-Arild Braaten
  * @see frames.Frame
  */
-enum FrameType {
+public enum FrameType {
     /**
      * @see DataFrame
      */

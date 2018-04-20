@@ -77,6 +77,7 @@ public enum Settings {
      * (Section 5.4.1) of type PROTOCOL_ERROR.
      */
     SETTINGS_MAX_FRAME_SIZE(0x5, 16384),
+
     /**
      * SETTINGS_MAX_HEADER_LIST_SIZE (0x6):  This advisory setting informs a
      * peer of the maximum size of header list that the sender is

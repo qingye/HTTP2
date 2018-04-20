@@ -61,12 +61,9 @@ public class ContinuationFrame extends Frame {
      *                            A receiver MUST treat the receipt of any other type of frame or a frame on a different
      *                            stream as a connection error of type PROTOCOL_ERROR.
      * @param headerBlockFragment A header block fragment.
-     * @param streamId            A stream Id expressed as an unsigned 31-bit integer.
-     *                            The value 0x0 is reserved for frames that are associated with the connection as a
-     *                            whole as opposed to an individual stream.
      */
-    ContinuationFrame(boolean endHeaders, ByteBuffer headerBlockFragment, int streamId) {
-        super(headerBlockFragment.position(), CONTINUATION, endHeaders ? END_HEADERS : 0, streamId);
+    ContinuationFrame(boolean endHeaders, ByteBuffer headerBlockFragment) {
+        super(headerBlockFragment.position(), CONTINUATION, endHeaders ? END_HEADERS : 0);
         this.headerBlockFragment = headerBlockFragment;
     }
 

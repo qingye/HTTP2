@@ -2,7 +2,6 @@ package frames;
 
 import java.nio.ByteBuffer;
 
-import static frames.ErrorCode.PROTOCOL_ERROR;
 import static frames.Flags.*;
 import static frames.FrameType.PUSH_PROMISE;
 
@@ -18,7 +17,7 @@ import static frames.FrameType.PUSH_PROMISE;
  * +---------------+
  * |Pad Length? (8)|
  * +-+-------------+-----------------------------------------------+
- * |R|                  Promised Stream ID (31)                    |
+ * |R|                  Promised streams.Stream ID (31)            |
  * +-+-----------------------------+-------------------------------+
  * |                   Header Block Fragment (*)                 ...
  * +---------------------------------------------------------------+
@@ -36,7 +35,7 @@ import static frames.FrameType.PUSH_PROMISE;
  * <p>
  * R: A single reserved bit.
  * <p>
- * Promised Stream ID:  An unsigned 31-bit integer that identifies the
+ * Promised streams.Stream ID:  An unsigned 31-bit integer that identifies the
  * stream that is reserved by the PUSH_PROMISE.  The promised stream
  * identifier MUST be a valid choice for the next stream sent by the
  * sender (see "new stream identifier" in Section 5.1.1).
@@ -128,16 +127,11 @@ public class PushPromiseFrame extends Frame {
      * @param flags               An 8-bit field reserved for boolean flags specific to the frame type.
      *                            Flag are assigned semantics specific to the indicated frame type.
      *                            Flag that have no defined semantics for a particular frame type MUST be ignored and MUST be left unset (0x0) when sending.
-     * @param streamId            A stream Id expressed as an unsigned 31-bit integer.
-     *                            The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param headerBlockFragment A header block fragment containing request header fields.
      * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
      */
-    public PushPromiseFrame(byte padLength, int promisedStreamID, int flags, int streamId, ByteBuffer headerBlockFragment, boolean endHeaders) {
-        super(5 + headerBlockFragment.position() + padLength, PUSH_PROMISE, combine((padLength != 0) ? PADDED : 0, (endHeaders ? END_HEADERS : 0)), streamId);
-        if (streamId == 0) {
-            throw PROTOCOL_ERROR.error();
-        }
+    public PushPromiseFrame(byte padLength, int promisedStreamID, int flags, ByteBuffer headerBlockFragment, boolean endHeaders) {
+        super(5 + headerBlockFragment.position() + padLength, PUSH_PROMISE, combine((padLength != 0) ? PADDED : 0, (endHeaders ? END_HEADERS : 0)));
         this.headerBlockFragment = headerBlockFragment;
         // TODO ensure SETTINGS_ENABLE_PUSH is not disabled when sending
     }

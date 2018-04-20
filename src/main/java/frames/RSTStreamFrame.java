@@ -2,7 +2,6 @@ package frames;
 
 import java.nio.ByteBuffer;
 
-import static frames.ErrorCode.PROTOCOL_ERROR;
 import static frames.FrameType.RST_STREAM;
 
 /**
@@ -57,15 +56,9 @@ public class RSTStreamFrame extends Frame {
      *
      * @param errorCode An unsigned, 32-bit integer identifying the error code (Section 7).
      *                  The error code indicates why the stream is being terminated.
-     * @param streamId  RST_STREAM frames MUST be associated with a stream.
-     *                  If a RST_STREAM frame is received with a stream identifier of 0x0,
-     *                  the recipient MUST treat this as a connection error
      */
-    public RSTStreamFrame(ErrorCode errorCode, int streamId) {
-        super(4, RST_STREAM, streamId);
-        if (streamId == 0) {
-            throw PROTOCOL_ERROR.error();
-        }
+    public RSTStreamFrame(ErrorCode errorCode) {
+        super(4, RST_STREAM);
         this.errorCode = errorCode;
     }
 

@@ -1,3 +1,9 @@
+package streams;
+
+import frames.Frame;
+
+import static streams.StreamState.OPEN;
+
 /**
  * A "stream" is an independent, bidirectional sequence of frames
  * exchanged between the client and server within an HTTP/2 connection.
@@ -13,7 +19,7 @@
  * Recipients process frames in the order they are received.  In
  * particular, the order of HEADERS and DATA frames is semantically
  * significant.</li>
- * <li>Streams are identified by an integer.  Stream identifiers are
+ * <li>Streams are identified by an integer.  streams.Stream identifiers are
  * assigned to streams by the endpoint initiating the stream.
  * </ul>
  *
@@ -21,6 +27,40 @@
  * @see StreamState
  */
 public class Stream {
-    int streamId;
+
+    public int streamId;
     StreamState state;
+    public Stream parent;
+    byte weight;
+
+    public Stream(int streamId, Stream parent) {
+        this(streamId, parent, (byte) 1);
+    }
+
+    public Stream(int streamId, Stream parent, byte weight) {
+        this.streamId = streamId;
+        this.state = OPEN;
+        this.parent = parent;
+        this.weight = weight;
+    }
+
+    public StreamState getState() {
+        return state;
+    }
+
+    public void setState(StreamState state) {
+        this.state = state;
+    }
+
+    public void send(Frame f) {
+
+    }
+
+    public void setParent(Stream parent) {
+        this.parent = parent;
+    }
+
+    public void setWeight(byte weight) {
+        this.weight = weight;
+    }
 }

@@ -17,7 +17,7 @@ import static frames.FrameType.HEADERS;
  * +---------------+
  * |Pad Length? (8)|
  * +-+-------------+-----------------------------------------------+
- * |E|                 Stream Dependency? (31)                     |
+ * |E|                 streams.Stream Dependency? (31)                     |
  * +-+-------------+-----------------------------------------------+
  * |  Weight? (8)  |
  * +-+-------------+-----------------------------------------------+
@@ -39,7 +39,7 @@ import static frames.FrameType.HEADERS;
  * exclusive (see Section 5.3).  This field is only present if the
  * PRIORITY flag is set.
  * <p>
- * Stream Dependency:  A 31-bit stream identifier for the stream that
+ * streams.Stream Dependency:  A 31-bit stream identifier for the stream that
  * this stream depends on (see Section 5.3).  This field is only
  * present if the PRIORITY flag is set.
  * <p>
@@ -77,7 +77,7 @@ import static frames.FrameType.HEADERS;
  * and any padding that it describes are present.
  * <p>
  * PRIORITY (0x20):  When set, bit 5 indicates that the Exclusive Flag
- * (E), Stream Dependency, and Weight fields are present; see
+ * (E), streams.Stream Dependency, and Weight fields are present; see
  * Section 5.3.
  * <p>
  * The payload of a HEADERS frame contains a header block fragment
@@ -108,7 +108,7 @@ import static frames.FrameType.HEADERS;
  */
 public class HeadersFrame extends Frame {
 
-    private int streamDependency = -1;
+    private int streamDependency = 0;
     private byte padLength;
     private boolean E = false;
     private byte weight = -1;
@@ -122,15 +122,10 @@ public class HeadersFrame extends Frame {
      *                            This field is only present if the PADDED flag is set.
      * @param headerBlockFragment A header block fragment.
      * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
-     * @param streamId            A stream Id expressed as an unsigned 31-bit integer.
-     *                            The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param endStream           When set, bit 0 indicates that the header block is the last that the endpoint will send for the identified stream.
      */
-    public HeadersFrame(boolean endStream, boolean endHeaders, byte padLength, int streamId, ByteBuffer headerBlockFragment) {
-        super(6 + headerBlockFragment.position() + padLength, HEADERS, combine((endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)), streamId);
-        if (streamId == 0) {
-            throw PROTOCOL_ERROR.error();
-        }
+    public HeadersFrame(boolean endStream, boolean endHeaders, byte padLength, ByteBuffer headerBlockFragment) {
+        super(6 + headerBlockFragment.position() + padLength, HEADERS, combine((endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
         if (padLength > payloadLength()) {
             throw PROTOCOL_ERROR.error();
         }
@@ -152,14 +147,12 @@ public class HeadersFrame extends Frame {
      *                            This field is only present if the PRIORITY flag is set.
      * @param weight              An unsigned 8-bit integer representing a priority weight for the stream.
      *                            Add one to the value to obtain a weight between 1 and 256. This field is only present if the PRIORITY flag is set.
-     * @param streamId            A stream Id expressed as an unsigned 31-bit integer.
-     *                            The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param headerBlockFragment The payload of this frame.
      * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
      * @param endStream           When set, bit 0 indicates that the header block is the last that the endpoint will send for the identified stream.
      */
-    public HeadersFrame(byte padLength, boolean E, int streamDependency, byte weight, int streamId, ByteBuffer headerBlockFragment, boolean endHeaders, boolean endStream) {
-        this(endStream, endHeaders, padLength, streamId, headerBlockFragment);
+    public HeadersFrame(byte padLength, boolean E, int streamDependency, byte weight, ByteBuffer headerBlockFragment, boolean endHeaders, boolean endStream) {
+        this(endStream, endHeaders, padLength, headerBlockFragment);
         addFlag(PRIORITY);
         this.streamDependency = streamDependency;
         this.padLength = padLength;

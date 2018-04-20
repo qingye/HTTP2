@@ -67,7 +67,7 @@ public class SettingsFrame extends Frame {
      *            When this bit is set, the payload of the SETTINGS frame MUST be empty.
      */
     public SettingsFrame(boolean ack) {
-        super(0, SETTINGS, (ack ? ACK : 0), 0); // TODO format payload, parameter for settings
+        super(0, SETTINGS, (ack ? ACK : 0)); // TODO format payload, parameter for settings
         // TODO ensure payload is a multiple of 6 octets
     }
 

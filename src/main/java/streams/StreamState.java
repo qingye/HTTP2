@@ -1,3 +1,5 @@
+package streams;
+
 /**
  * The lifecycle of a stream is shown in Figure 2.
  * <pre>
@@ -39,7 +41,7 @@
  *           ES: END_STREAM flag
  *           R:  RST_STREAM frame
  *
- *                           Figure 2: Stream States
+ *                           Figure 2: streams.Stream States
  * }
  * </pre>
  * Note that this diagram shows stream state transitions and the frames
@@ -83,7 +85,7 @@ public enum StreamState {
      * for the reserved stream transitions to "reserved (remote)".</li>
      *
      * <li>Note that the PUSH_PROMISE frame is not sent on the idle stream
-     * but references the newly reserved stream in the Promised Stream
+     * but references the newly reserved stream in the Promised streams.Stream
      * ID field.</li>
      * </ul>
      * <p>

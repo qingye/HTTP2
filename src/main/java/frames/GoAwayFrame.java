@@ -2,7 +2,6 @@ package frames;
 
 import java.nio.ByteBuffer;
 
-import static frames.ErrorCode.PROTOCOL_ERROR;
 import static frames.FrameType.GOAWAY;
 
 /**
@@ -51,7 +50,7 @@ import static frames.FrameType.GOAWAY;
  * <pre>
  * {@code
  * +-+-------------------------------------------------------------+
- * |R|                  Last-Stream-ID (31)                        |
+ * |R|                  Last-streams.Stream-ID (31)                        |
  * +-+-------------------------------------------------------------+
  * |                      Error Code (32)                          |
  * +---------------------------------------------------------------+
@@ -151,15 +150,10 @@ public class GoAwayFrame extends Frame {
      *
      * @param lastStreamId   Contains the highest-numbered stream identifier for which the sender of the GOAWAY frame might have taken some action on or might yet take action on.
      * @param errorCode      The reason for closing the connection.
-     * @param streamId       A stream Id expressed as an unsigned 31-bit integer.
-     *                       The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param additionalData The payload of this frame. The structure and content of the frame payload is dependent entirely on the frame type.
      */
-    GoAwayFrame(int lastStreamId, ErrorCode errorCode, int streamId, ByteBuffer additionalData) {
-        super(8 + additionalData.position(), GOAWAY, streamId);
-        if (streamId != 0) {
-            throw PROTOCOL_ERROR.error();
-        }
+    GoAwayFrame(int lastStreamId, ErrorCode errorCode, ByteBuffer additionalData) {
+        super(8 + additionalData.position(), GOAWAY);
         if (lastStreamId < 0) {
             throw new IllegalArgumentException("Invalid lastStreamId");
         }
