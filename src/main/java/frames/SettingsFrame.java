@@ -71,6 +71,11 @@ public class SettingsFrame extends Frame {
         // TODO ensure payload is a multiple of 6 octets
     }
 
+    SettingsFrame(byte flags, ByteBuffer payload) {
+        super(payload.remaining(), SETTINGS, flags);
+        // TODO parse payload
+    }
+
     @Override
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);

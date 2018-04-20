@@ -1,15 +1,12 @@
 package frames;
 
-import static frames.ErrorCode.FLOW_CONTROL_ERROR;
-import static frames.ErrorCode.PROTOCOL_ERROR;
-
 /**
  * Settings for settings frames
  *
  * @author Rolv-Arild Braaten
  * @see frames.SettingsFrame
  */
-public enum Settings {
+public enum Setting {
     /**
      * SETTINGS_HEADER_TABLE_SIZE (0x1):  Allows the sender to inform the
      * remote endpoint of the maximum size of the header compression
@@ -91,24 +88,11 @@ public enum Settings {
      */
     SETTINGS_MAX_HEADER_LIST_SIZE(0x6, Integer.MAX_VALUE);
 
-    final short code;
-    private int val;
+    public final short code;
+    public final int defaultValue;
 
-    Settings(int code, int initialValue) {
+    Setting(int code, int defaultValue) {
         this.code = (short) code;
-        this.val = initialValue;
-    }
-
-    public void setVal(int val) {
-        switch (this) {
-            case SETTINGS_ENABLE_PUSH:
-                if (val != 0 && val != 1) throw PROTOCOL_ERROR.error();
-            case SETTINGS_INITIAL_WINDOW_SIZE:
-                if (val < 0) throw FLOW_CONTROL_ERROR.error(); // the value is above 2^31-1 in two's complement
-            case SETTINGS_MAX_FRAME_SIZE:
-                if (val < 16384 || val > 16777215) throw PROTOCOL_ERROR.error();
-            default:
-                this.val = val;
-        }
+        this.defaultValue = defaultValue;
     }
 }

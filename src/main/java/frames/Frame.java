@@ -1,9 +1,8 @@
 package frames;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
-
-import static frames.ErrorCode.FRAME_SIZE_ERROR;
-import static frames.FrameType.PING;
 
 /**
  * All frames begin with a fixed 9-octet header followed by a variable-length payload.
@@ -56,35 +55,41 @@ import static frames.FrameType.PING;
  */
 public abstract class Frame {
 
-    private static final int MAX_LENGTH = 16777216; // 2^24
-    private static int SETTINGS_MAX_FRAME_SIZE = 16384;
-    public final FrameType type;
-    int length;
-    byte flags;
+    protected final int length;
+    protected final byte flags;
+    private final FrameType type;
 
     /**
      * Constructs a frame header
      *
-     * @param length   The length of the frame payload expressed as an unsigned 24-bit integer.
-     *                 Values greater than 214 (16,384) MUST NOT be sent unless the receiver has set a larger value for SETTINGS_MAX_FRAME_SIZE.
-     * @param type     The 8-bit type of the frame.
-     *                 The frame type determines the format and semantics of the frame. Implementations MUST ignore and discard any frame that has a type that is unknown.
-     * @param flags    An 8-bit field reserved for boolean flags specific to the frame type.
-     *                 Flag are assigned semantics specific to the indicated frame type. Flag that have no defined semantics for a particular frame type MUST be ignored and MUST be left unset (0x0) when sending.
+     * @param length The length of the frame payload expressed as an unsigned 24-bit integer.
+     *               Values greater than 214 (16,384) MUST NOT be sent unless the receiver has set a larger value for SETTINGS_MAX_FRAME_SIZE.
+     * @param type   The 8-bit type of the frame.
+     *               The frame type determines the format and semantics of the frame. Implementations MUST ignore and discard any frame that has a type that is unknown.
+     * @param flags  An 8-bit field reserved for boolean flags specific to the frame type.
+     *               Flag are assigned semantics specific to the indicated frame type. Flag that have no defined semantics for a particular frame type MUST be ignored and MUST be left unset (0x0) when sending.
      */
-    Frame(int length, FrameType type, byte flags) {
-        if (length < 0 || length > SETTINGS_MAX_FRAME_SIZE || length > MAX_LENGTH) {
-            throw FRAME_SIZE_ERROR.error();
-        } else if (type == PING && length != 8) {
-            throw FRAME_SIZE_ERROR.error();
-        }
+    public Frame(int length, FrameType type, byte flags) {
+        // TODO check for errors maybe?
         this.length = length;
         this.type = type;
         this.flags = flags;
     }
 
-    Frame(int length, FrameType type) {
+    public Frame(int length, FrameType type) {
         this(length, type, (byte) 0);
+    }
+
+    public static Frame fromData(byte type, byte flags, ByteBuffer payload) {
+        try {
+            FrameType ft = FrameType.from(type);
+            Constructor<?> constructor = ft.c.getConstructor(byte.class, ByteBuffer.class);
+            return (Frame) constructor.newInstance(flags, payload);
+            // !!! All implementing classes must provide a constructor that takes these arguments
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -107,19 +112,24 @@ public abstract class Frame {
         return out;
     }
 
-    int payloadLength() {
-        return length;
-    }
-
-    FrameType getType() {
+    /**
+     * @return the type of this frame
+     */
+    public FrameType getType() {
         return type;
     }
 
-    void addFlag(byte flag) {
-        flags |= flag;
+    /**
+     * @return the length of the payload of this frame
+     */
+    public int getLength() {
+        return length;
     }
 
-    void removeFlag(byte flag) {
-        flags &= flag ^ 0xff;
+    /**
+     * @return the flags of this frame
+     */
+    public byte getFlags() {
+        return flags;
     }
 }

@@ -108,11 +108,11 @@ import static frames.FrameType.HEADERS;
  */
 public class HeadersFrame extends Frame {
 
-    private int streamDependency = 0;
-    private byte padLength;
-    private boolean E = false;
-    private byte weight = -1;
-    private ByteBuffer headerBlockFragment;
+    private final int streamDependency;
+    private final byte padLength;
+    private final boolean E;
+    private final byte weight;
+    private final ByteBuffer headerBlockFragment;
 
 
     /**
@@ -125,15 +125,17 @@ public class HeadersFrame extends Frame {
      * @param endStream           When set, bit 0 indicates that the header block is the last that the endpoint will send for the identified stream.
      */
     public HeadersFrame(boolean endStream, boolean endHeaders, byte padLength, ByteBuffer headerBlockFragment) {
-        super(6 + headerBlockFragment.position() + padLength, HEADERS, combine((endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
-        if (padLength > payloadLength()) {
+        super(6 + headerBlockFragment.remaining() + padLength, HEADERS, combine((endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
+        if (padLength > length) {
             throw PROTOCOL_ERROR.error();
-        }
-        if (streamDependency < 0) {
-            throw new IllegalArgumentException("Invalid stream dependency");
         }
         this.padLength = padLength;
         this.headerBlockFragment = headerBlockFragment;
+
+        // not included as PRIORITY flag is not set, but needs to be initialized since all variables are final
+        this.streamDependency = 0;
+        this.E = false;
+        this.weight = 0;
     }
 
     /**
@@ -152,22 +154,37 @@ public class HeadersFrame extends Frame {
      * @param endStream           When set, bit 0 indicates that the header block is the last that the endpoint will send for the identified stream.
      */
     public HeadersFrame(byte padLength, boolean E, int streamDependency, byte weight, ByteBuffer headerBlockFragment, boolean endHeaders, boolean endStream) {
-        this(endStream, endHeaders, padLength, headerBlockFragment);
-        addFlag(PRIORITY);
-        this.streamDependency = streamDependency;
+        super(6 + headerBlockFragment.remaining() + padLength, HEADERS, combine((endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
+        if (padLength > length) {
+            throw PROTOCOL_ERROR.error();
+        }
         this.padLength = padLength;
+        this.headerBlockFragment = headerBlockFragment;
+        this.streamDependency = streamDependency;
         this.E = E;
         this.weight = weight;
     }
 
+//    HeadersFrame(byte flags, ByteBuffer payload) {
+//        super(payload.remaining(), HEADERS, flags);
+//        // TODO parse payload
+//    }
+
+
     @Override
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);
-        out.put(padLength);
-        out.putInt(E ? streamDependency & -2147483648 : streamDependency); // -2147483648 is only the first bit
-        out.put(weight);
+        if (Flags.isSet(this.flags, PADDED)) {
+            out.put(padLength);
+        }
+        if (Flags.isSet(this.flags, PRIORITY)) {
+            out.putInt(E ? streamDependency & -2147483648 : streamDependency); // -2147483648 is only the first bit
+            out.put(weight);
+        }
         out.put(headerBlockFragment);
-        out.put(ByteBuffer.allocate(padLength));
+        if (Flags.isSet(this.flags, PADDED)) {
+            out.put(ByteBuffer.allocate(padLength));
+        }
         return out;
     }
 }

@@ -75,7 +75,7 @@ import static frames.FrameType.WINDOW_UPDATE;
  */
 public class WindowUpdateFrame extends Frame {
 
-    public int windowSizeIncrement;
+    private final int windowSizeIncrement;
 
     /**
      * Constructs a window update frame
@@ -90,6 +90,11 @@ public class WindowUpdateFrame extends Frame {
         }
         this.windowSizeIncrement = windowSizeIncrement;
     }
+
+//    WindowUpdateFrame(byte flags, ByteBuffer payload) {
+//        super(payload.remaining(), WINDOW_UPDATE, flags);
+//        // TODO parse payload
+//    }
 
     @Override
     public ByteBuffer payload() {

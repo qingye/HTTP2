@@ -83,6 +83,11 @@ public class PriorityFrame extends Frame {
         this.weight = weight;
     }
 
+//    PriorityFrame(byte flags, ByteBuffer payload) {
+//        super(payload.remaining(), PRIORITY, flags);
+//        // TODO parse payload
+//    }
+
     @Override
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);

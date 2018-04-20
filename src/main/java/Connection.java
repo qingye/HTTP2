@@ -8,10 +8,12 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import static frames.ErrorCode.FRAME_SIZE_ERROR;
 import static streams.StreamState.*;
 
 public class Connection {
 
+    private Settings settings = Settings.getDefault();
     private int idIncrement = 1;
     private Map<Integer, Stream> streamMap = new HashMap<>();
     private Socket connection;
@@ -23,13 +25,25 @@ public class Connection {
         addStreamInternal(root);
     }
 
+    void onRecieveData(ByteBuffer data) {
+        int length = (((data.get() << 8) & data.get()) << 8) & data.get();
+        byte type = data.get();
+        byte flags = data.get();
+        Stream stream = streamMap.get(data.getInt() & Integer.MAX_VALUE); // mask away the R bit
+        if (data.remaining() != length) {
+            throw FRAME_SIZE_ERROR.error();
+        }
+        // remaining bytes in data is payload
+        Frame f = Frame.fromData(type, flags, data.slice());
+    }
+
     private void addStreamInternal(Stream s) {
         streamMap.put(s.streamId, s);
     }
 
     private boolean isAllowed(Stream s, Frame f) {
         StreamState ss = s.getState();
-        switch (f.type) {
+        switch (f.getType()) {
             case DATA:
                 return s.streamId != 0 && (ss == OPEN || ss == HALF_CLOSED_LOCAL);
             case HEADERS:

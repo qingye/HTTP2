@@ -141,9 +141,9 @@ import static frames.FrameType.GOAWAY;
  */
 public class GoAwayFrame extends Frame {
 
-    int lastStreamId;
-    ErrorCode errorCode;
-    ByteBuffer additionalData;
+    private final int lastStreamId;
+    private final ErrorCode errorCode;
+    private final ByteBuffer additionalData;
 
     /**
      * Constructs a go away frame
@@ -152,8 +152,8 @@ public class GoAwayFrame extends Frame {
      * @param errorCode      The reason for closing the connection.
      * @param additionalData The payload of this frame. The structure and content of the frame payload is dependent entirely on the frame type.
      */
-    GoAwayFrame(int lastStreamId, ErrorCode errorCode, ByteBuffer additionalData) {
-        super(8 + additionalData.position(), GOAWAY);
+    public GoAwayFrame(int lastStreamId, ErrorCode errorCode, ByteBuffer additionalData) {
+        super(8 + additionalData.remaining(), GOAWAY);
         if (lastStreamId < 0) {
             throw new IllegalArgumentException("Invalid lastStreamId");
         }
@@ -161,6 +161,11 @@ public class GoAwayFrame extends Frame {
         this.errorCode = errorCode;
         this.additionalData = additionalData;
     }
+
+//    GoAwayFrame(byte flags, ByteBuffer payload) {
+//        super(payload.remaining(), GOAWAY, flags);
+//        // TODO parse payload
+//    }
 
     @Override
     public ByteBuffer payload() {

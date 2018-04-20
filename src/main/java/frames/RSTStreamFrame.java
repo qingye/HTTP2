@@ -62,6 +62,11 @@ public class RSTStreamFrame extends Frame {
         this.errorCode = errorCode;
     }
 
+//    RSTStreamFrame(byte flags, ByteBuffer payload) {
+//        super(payload.remaining(), RST_STREAM, flags);
+//        // TODO parse payload
+//    }
+
     @Override
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);

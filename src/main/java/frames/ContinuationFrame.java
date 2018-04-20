@@ -62,9 +62,14 @@ public class ContinuationFrame extends Frame {
      *                            stream as a connection error of type PROTOCOL_ERROR.
      * @param headerBlockFragment A header block fragment.
      */
-    ContinuationFrame(boolean endHeaders, ByteBuffer headerBlockFragment) {
-        super(headerBlockFragment.position(), CONTINUATION, endHeaders ? END_HEADERS : 0);
+    public ContinuationFrame(boolean endHeaders, ByteBuffer headerBlockFragment) {
+        super(headerBlockFragment.remaining(), CONTINUATION, endHeaders ? END_HEADERS : 0);
         this.headerBlockFragment = headerBlockFragment;
+    }
+
+    ContinuationFrame(byte flags, ByteBuffer payload) {
+        super(payload.remaining(), CONTINUATION, flags);
+        // TODO create continuation frame
     }
 
     @Override

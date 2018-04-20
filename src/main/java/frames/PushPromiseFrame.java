@@ -113,9 +113,9 @@ import static frames.FrameType.PUSH_PROMISE;
  */
 public class PushPromiseFrame extends Frame {
 
-    byte padLength;
-    int promisedStreamId;
-    ByteBuffer headerBlockFragment;
+    private final byte padLength;
+    private final int promisedStreamId;
+    private final ByteBuffer headerBlockFragment;
 
     /**
      * Constructs a push promise frame
@@ -131,10 +131,17 @@ public class PushPromiseFrame extends Frame {
      * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
      */
     public PushPromiseFrame(byte padLength, int promisedStreamID, int flags, ByteBuffer headerBlockFragment, boolean endHeaders) {
-        super(5 + headerBlockFragment.position() + padLength, PUSH_PROMISE, combine((padLength != 0) ? PADDED : 0, (endHeaders ? END_HEADERS : 0)));
+        super(5 + headerBlockFragment.remaining() + padLength, PUSH_PROMISE, combine((padLength != 0) ? PADDED : 0, (endHeaders ? END_HEADERS : 0)));
+        this.padLength = padLength;
+        this.promisedStreamId = promisedStreamID;
         this.headerBlockFragment = headerBlockFragment;
         // TODO ensure SETTINGS_ENABLE_PUSH is not disabled when sending
     }
+
+//    PushPromiseFrame(byte flags, ByteBuffer payload) {
+//        super(payload.remaining(), PUSH_PROMISE, flags);
+//        // TODO parse payload
+//    }
 
     @Override
     public ByteBuffer payload() {

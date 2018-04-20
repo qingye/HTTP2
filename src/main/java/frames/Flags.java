@@ -5,17 +5,12 @@ package frames;
  *
  * @author Rolv-Arild Braaten
  */
-class Flags {
-
-    static final byte ACK = 0x1;
-    static final byte END_STREAM = 0x1;
-    static final byte END_HEADERS = 0x4;
-    static final byte PADDED = 0x8;
-    static final byte PRIORITY = 0x20;
-
-
-    private Flags() {
-    }
+public interface Flags {
+    byte ACK = 0x1;
+    byte END_STREAM = 0x1;
+    byte END_HEADERS = 0x4;
+    byte PADDED = 0x8;
+    byte PRIORITY = 0x20;
 
     static byte combine(byte... flags) {
         int out = 0;

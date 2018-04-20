@@ -57,10 +57,16 @@ public class PingFrame extends Frame {
      * @param ack      When set, bit 0 indicates that this PING frame is a PING response.
      *                 An endpoint MUST set this flag in PING responses. An endpoint MUST NOT respond to PING frames containing this flag.
      */
-    PingFrame(boolean ack) {
+    public PingFrame(boolean ack) {
         super(8, PING, ack ? ACK : 0);
         // TODO check that length of payload is 8 bytes
     }
+
+    PingFrame(byte flags, ByteBuffer payload) {
+        super(payload.remaining(), PING, flags);
+        // TODO parse payload
+    }
+
 
     @Override
     public ByteBuffer payload() {
