@@ -165,10 +165,17 @@ public class HeadersFrame extends Frame {
         this.weight = weight;
     }
 
-//    HeadersFrame(byte flags, ByteBuffer payload) {
-//        super(payload.remaining(), HEADERS, flags);
-//        // TODO parse payload
-//    }
+    public HeadersFrame(byte flags, ByteBuffer payload) {
+        super(payload.remaining(), HEADERS, flags);
+        this.padLength = payload.get();
+        int next = payload.getInt();
+        this.E = (next & -2147483648) != 0;
+        this.streamDependency = next & 2147483647;
+        this.weight = payload.get();
+        ByteBuffer slice = payload.slice();
+        slice.limit(slice.limit() - padLength);
+        this.headerBlockFragment = slice;
+    }
 
 
     @Override

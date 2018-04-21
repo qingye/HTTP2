@@ -68,7 +68,7 @@ public class DataFrame extends Frame {
     /**
      * Constructs a data frame with no padding.
      *
-     * @param data   The payload of this data frame
+     * @param data      The payload of this data frame
      * @param endStream When set, bit 0 indicates that this frame is the last that the endpoint will send for the identified stream.
      *                  Setting this flag causes the stream to enter one of the "half-closed" states or the "closed" state.
      */
@@ -76,9 +76,12 @@ public class DataFrame extends Frame {
         this(data, (byte) 0, endStream);
     }
 
-    DataFrame(byte flags, ByteBuffer payload) {
+    public DataFrame(byte flags, ByteBuffer payload) {
         super(payload.remaining(), DATA, flags);
-        // TODO create data frame
+        this.padLength = payload.get();
+        ByteBuffer slice = payload.slice();
+        slice.limit(slice.limit() - padLength);
+        this.data = slice;
     }
 
     @Override

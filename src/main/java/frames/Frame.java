@@ -1,7 +1,5 @@
 package frames;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 
 /**
@@ -78,18 +76,6 @@ public abstract class Frame {
 
     public Frame(int length, FrameType type) {
         this(length, type, (byte) 0);
-    }
-
-    public static Frame fromData(byte type, byte flags, ByteBuffer payload) {
-        try {
-            FrameType ft = FrameType.from(type);
-            Constructor<?> constructor = ft.c.getConstructor(byte.class, ByteBuffer.class);
-            return (Frame) constructor.newInstance(flags, payload);
-            // !!! All implementing classes must provide a constructor that takes these arguments
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     /**

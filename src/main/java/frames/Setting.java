@@ -1,7 +1,7 @@
 package frames;
 
 /**
- * Settings for settings frames
+ * Settings for settings frames.
  *
  * @author Rolv-Arild Braaten
  * @see frames.SettingsFrame
@@ -94,5 +94,9 @@ public enum Setting {
     Setting(int code, int defaultValue) {
         this.code = (short) code;
         this.defaultValue = defaultValue;
+    }
+
+    public static Setting from(short code) {
+        return values()[code - 1];
     }
 }

@@ -67,9 +67,9 @@ public class ContinuationFrame extends Frame {
         this.headerBlockFragment = headerBlockFragment;
     }
 
-    ContinuationFrame(byte flags, ByteBuffer payload) {
+    public ContinuationFrame(byte flags, ByteBuffer payload) {
         super(payload.remaining(), CONTINUATION, flags);
-        // TODO create continuation frame
+        this.headerBlockFragment = payload.slice();
     }
 
     @Override

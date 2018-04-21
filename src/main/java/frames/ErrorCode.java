@@ -1,7 +1,7 @@
 package frames;
 
 /**
- * All errors and their corresponding codes
+ * All errors and their corresponding codes.
  *
  * @author Rolv-Arild Braaten
  */
@@ -102,6 +102,13 @@ public enum ErrorCode {
         this.message = message;
     }
 
+    public static ErrorCode from(int code) {
+        return values()[code];
+    }
+
+    /**
+     * @return an error containing a message specific to the type of error.
+     */
     public Error error() {
         throw new Error(message);
     }

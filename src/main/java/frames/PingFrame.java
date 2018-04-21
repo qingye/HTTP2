@@ -62,7 +62,7 @@ public class PingFrame extends Frame {
         // TODO check that length of payload is 8 bytes
     }
 
-    PingFrame(byte flags, ByteBuffer payload) {
+    public PingFrame(byte flags, ByteBuffer payload) {
         super(payload.remaining(), PING, flags);
         // TODO parse payload
     }

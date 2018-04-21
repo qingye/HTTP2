@@ -1,4 +1,6 @@
-import frames.Frame;
+package connections;
+
+import frames.*;
 import streams.Stream;
 import streams.StreamState;
 
@@ -25,16 +27,50 @@ public class Connection {
         addStreamInternal(root);
     }
 
-    void onRecieveData(ByteBuffer data) {
-        int length = (((data.get() << 8) & data.get()) << 8) & data.get();
-        byte type = data.get();
-        byte flags = data.get();
-        Stream stream = streamMap.get(data.getInt() & Integer.MAX_VALUE); // mask away the R bit
-        if (data.remaining() != length) {
+    void onRecieveData(ByteBuffer frame) {
+        int length = (((frame.get() << 8) & frame.get()) << 8) & frame.get();
+        byte type = frame.get();
+        byte flags = frame.get();
+        Stream stream = streamMap.get(frame.getInt() & Integer.MAX_VALUE); // mask away the R bit
+        if (frame.remaining() != length) {
             throw FRAME_SIZE_ERROR.error();
         }
         // remaining bytes in data is payload
-        Frame f = Frame.fromData(type, flags, data.slice());
+        Frame f;
+        FrameType ft = FrameType.from(type);
+        // TODO act upon the recieved data
+        switch (ft) {
+            case DATA:
+                f = new DataFrame(flags, frame.slice());
+
+            case HEADERS:
+                f = new HeadersFrame(flags, frame.slice());
+
+            case PRIORITY:
+                f = new PriorityFrame(flags, frame.slice());
+
+            case RST_STREAM:
+                f = new RSTStreamFrame(flags, frame.slice());
+
+            case SETTINGS:
+                f = new SettingsFrame(flags, frame.slice());
+
+            case PUSH_PROMISE:
+                f = new PushPromiseFrame(flags, frame.slice());
+
+            case PING:
+                f = new PingFrame(flags, frame.slice());
+
+            case GOAWAY:
+                f = new GoAwayFrame(flags, frame.slice());
+
+            case WINDOW_UPDATE:
+                f = new WindowUpdateFrame(flags, frame.slice());
+
+            case CONTINUATION:
+                f = new ContinuationFrame(flags, frame.slice());
+
+        }
     }
 
     private void addStreamInternal(Stream s) {
@@ -66,7 +102,7 @@ public class Connection {
         }
     }
 
-    boolean sendFrame(Stream s, Frame f) throws IOException {
+    public boolean sendFrame(Stream s, Frame f) throws IOException {
         if (isAllowed(s, f)) {
             ByteBuffer payload = f.bytes(s.streamId);
             while (payload.hasRemaining()) {
@@ -77,7 +113,7 @@ public class Connection {
         return false;
     }
 
-    Stream addStream() {
+    public Stream addStream() {
         Stream s = new Stream(idIncrement++, root);
         addStreamInternal(s);
         return s;

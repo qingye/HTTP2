@@ -162,10 +162,12 @@ public class GoAwayFrame extends Frame {
         this.additionalData = additionalData;
     }
 
-//    GoAwayFrame(byte flags, ByteBuffer payload) {
-//        super(payload.remaining(), GOAWAY, flags);
-//        // TODO parse payload
-//    }
+    public GoAwayFrame(byte flags, ByteBuffer payload) {
+        super(payload.remaining(), GOAWAY, flags);
+        this.lastStreamId = payload.getInt() & 2147483647;
+        this.errorCode = ErrorCode.from(payload.getInt());
+        this.additionalData = payload.slice();
+    }
 
     @Override
     public ByteBuffer payload() {

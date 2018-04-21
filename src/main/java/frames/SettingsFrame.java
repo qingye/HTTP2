@@ -1,7 +1,10 @@
 package frames;
 
+import connections.Settings;
+
 import java.nio.ByteBuffer;
 
+import static connections.Settings.UNDEFINED;
 import static frames.Flags.ACK;
 import static frames.FrameType.SETTINGS;
 
@@ -60,25 +63,40 @@ import static frames.FrameType.SETTINGS;
  */
 public class SettingsFrame extends Frame {
 
+    private final Settings settings;
+
     /**
      * Constructs a settings frame
      *
      * @param ack When set, bit 0 indicates that this frame acknowledges receipt and application of the peer's SETTINGS frame.
      *            When this bit is set, the payload of the SETTINGS frame MUST be empty.
      */
-    public SettingsFrame(boolean ack) {
+    public SettingsFrame(boolean ack, Settings settings) {
         super(0, SETTINGS, (ack ? ACK : 0)); // TODO format payload, parameter for settings
-        // TODO ensure payload is a multiple of 6 octets
+        this.settings = settings;
     }
 
-    SettingsFrame(byte flags, ByteBuffer payload) {
+    public SettingsFrame(byte flags, ByteBuffer payload) {
         super(payload.remaining(), SETTINGS, flags);
-        // TODO parse payload
+        Settings sets = Settings.getUndefined();
+        while (payload.hasRemaining()) {
+            Setting set = Setting.from(payload.getShort());
+            int val = payload.getInt();
+            sets.setValue(set, val);
+        }
+        this.settings = sets;
     }
 
     @Override
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);
-        return null;
+        for (Setting setting : Setting.values()) {
+            int val = settings.valueOf(setting);
+            if (val != UNDEFINED) {
+                out.putShort(setting.code);
+                out.putInt(val);
+            }
+        }
+        return out;
     }
 }

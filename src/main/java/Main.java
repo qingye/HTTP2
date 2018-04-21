@@ -1,3 +1,4 @@
+import connections.Connection;
 import frames.HeadersFrame;
 import streams.Stream;
 

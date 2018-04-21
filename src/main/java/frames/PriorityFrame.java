@@ -83,10 +83,13 @@ public class PriorityFrame extends Frame {
         this.weight = weight;
     }
 
-//    PriorityFrame(byte flags, ByteBuffer payload) {
-//        super(payload.remaining(), PRIORITY, flags);
-//        // TODO parse payload
-//    }
+    public PriorityFrame(byte flags, ByteBuffer payload) {
+        super(payload.remaining(), PRIORITY, flags);
+        int next = payload.getInt();
+        this.E = (next & -2147483648) != 0;
+        this.streamDependency = next & 2147483647;
+        this.weight = payload.get();
+    }
 
     @Override
     public ByteBuffer payload() {

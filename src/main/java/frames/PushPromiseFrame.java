@@ -124,13 +124,10 @@ public class PushPromiseFrame extends Frame {
      *                            This field is only present if the PADDED flag is set.
      * @param promisedStreamID    An unsigned 31-bit integer that identifies the stream that is reserved by the PUSH_PROMISE.
      *                            The promised stream identifier MUST be a valid choice for the next stream sent by the sender.
-     * @param flags               An 8-bit field reserved for boolean flags specific to the frame type.
-     *                            Flag are assigned semantics specific to the indicated frame type.
-     *                            Flag that have no defined semantics for a particular frame type MUST be ignored and MUST be left unset (0x0) when sending.
      * @param headerBlockFragment A header block fragment containing request header fields.
      * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
      */
-    public PushPromiseFrame(byte padLength, int promisedStreamID, int flags, ByteBuffer headerBlockFragment, boolean endHeaders) {
+    public PushPromiseFrame(byte padLength, int promisedStreamID, ByteBuffer headerBlockFragment, boolean endHeaders) {
         super(5 + headerBlockFragment.remaining() + padLength, PUSH_PROMISE, combine((padLength != 0) ? PADDED : 0, (endHeaders ? END_HEADERS : 0)));
         this.padLength = padLength;
         this.promisedStreamId = promisedStreamID;
@@ -138,10 +135,15 @@ public class PushPromiseFrame extends Frame {
         // TODO ensure SETTINGS_ENABLE_PUSH is not disabled when sending
     }
 
-//    PushPromiseFrame(byte flags, ByteBuffer payload) {
-//        super(payload.remaining(), PUSH_PROMISE, flags);
-//        // TODO parse payload
-//    }
+    public PushPromiseFrame(byte flags, ByteBuffer payload) {
+        super(payload.remaining(), PUSH_PROMISE, flags);
+        this.padLength = payload.get();
+        this.promisedStreamId = payload.getInt() & 2147483647;
+        ByteBuffer slice = payload.slice();
+        slice.limit(slice.limit() - padLength);
+        this.headerBlockFragment = slice;
+
+    }
 
     @Override
     public ByteBuffer payload() {
