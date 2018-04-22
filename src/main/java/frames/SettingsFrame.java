@@ -89,7 +89,7 @@ public class SettingsFrame extends Frame {
 
     @Override
     public ByteBuffer payload() {
-        ByteBuffer out = ByteBuffer.allocate(length);
+        ByteBuffer out = ByteBuffer.allocate(36);
         for (Setting setting : Setting.values()) {
             int val = settings.valueOf(setting);
             if (val != UNDEFINED) {

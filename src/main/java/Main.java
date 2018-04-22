@@ -1,5 +1,6 @@
 import connections.Connection;
-import frames.HeadersFrame;
+import connections.Settings;
+import frames.SettingsFrame;
 import streams.Stream;
 
 import javax.net.ServerSocketFactory;
@@ -7,12 +8,11 @@ import javax.net.ssl.SSLServerSocketFactory;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        ServerSocket ss = new ServerSocket(4444);
+        ServerSocket ss = new ServerSocket(1234);
 
         ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
 
@@ -22,6 +22,6 @@ public class Main {
 
         Stream stream = c.addStream();
 
-        c.sendFrame(stream, new HeadersFrame(true, true, (byte) 0, ByteBuffer.allocate(0)));
+        c.sendWithRoot(new SettingsFrame(false, Settings.getDefault()));
     }
 }

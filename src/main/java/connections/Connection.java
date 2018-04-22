@@ -18,18 +18,27 @@ public class Connection {
     private Settings settings = Settings.getDefault();
     private int idIncrement = 1;
     private Map<Integer, Stream> streamMap = new HashMap<>();
-    private Socket connection;
+    private Socket socket;
     private Stream root;
 
+    /**
+     * Creates a connection with a socket.
+     *
+     * @param connection the socket to send data over.
+     */
     public Connection(Socket connection) {
-        this.connection = connection;
+        this.socket = connection;
         this.root = new Stream(0, null);
         addStreamInternal(root);
+
+        Thread t = new ConnectionThread(this);
+        t.start();
     }
 
     void onRecieveData(ByteBuffer frame) {
-        int length = (((frame.get() << 8) & frame.get()) << 8) & frame.get();
-        byte type = frame.get();
+        int next = frame.getInt();
+        int length = next >> 8; // length is only 3 bytes
+        byte type = (byte) (next & 0xff);
         byte flags = frame.get();
         Stream stream = streamMap.get(frame.getInt() & Integer.MAX_VALUE); // mask away the R bit
         if (frame.remaining() != length) {
@@ -102,11 +111,16 @@ public class Connection {
         }
     }
 
+    public boolean sendWithRoot(Frame f) throws IOException {
+        return sendFrame(root, f);
+    }
+
     public boolean sendFrame(Stream s, Frame f) throws IOException {
+        // TODO connection should figure out which frame to send with on its own
         if (isAllowed(s, f)) {
-            ByteBuffer payload = f.bytes(s.streamId);
-            while (payload.hasRemaining()) {
-                connection.getOutputStream().write(payload.get());
+            ByteBuffer frame = f.bytes(s.streamId);
+            while (frame.hasRemaining()) {
+                socket.getOutputStream().write(frame.get());
             }
             return true;
         }
@@ -116,6 +130,7 @@ public class Connection {
     public Stream addStream() {
         Stream s = new Stream(idIncrement++, root);
         addStreamInternal(s);
+        // TODO send headers frame
         return s;
     }
 
@@ -130,5 +145,9 @@ public class Connection {
                 }
             }
         }
+    }
+
+    public Socket getSocket() {
+        return socket;
     }
 }

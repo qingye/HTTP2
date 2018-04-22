@@ -11,7 +11,7 @@ import static frames.FrameType.PRIORITY;
  * <pre>
  * {@code
  * +-+-------------------------------------------------------------+
- * |E|                  streams.Stream Dependency (31)                     |
+ * |E|                  streams.Stream Dependency (31)             |
  * +-+-------------+-----------------------------------------------+
  * |   Weight (8)  |
  * +-+-------------+
