@@ -40,7 +40,7 @@ class ConnectionThread extends Thread {
 //        bb.mark();
         bb.limit(length);
         InputStream is = connection.getSocket().getInputStream();
-//        System.out.println(new String(is.readAllBytes()));
+//        System.out.print(new String(is.readAllBytes()));
         int re;
         while (bb.remaining() > 0 && (re = is.read()) >= 0) {
 //            System.out.println(bb.remaining());

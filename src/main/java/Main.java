@@ -25,9 +25,7 @@ public class Main {
         Socket s = ss.accept();
 
         OutputStream os = s.getOutputStream();
-        os.write(("HTTP/1.1 101 Switching Protocols\r\n" +
-                "Upgrade: h2c\r\n" +
-                "\r\n").getBytes());
+        os.write(new byte[]{(byte) 0x5052, (byte) 0x4920, (byte) 0x2a20, (byte) 0x4854, (byte) 0x5450, (byte) 0x2f32, (byte) 0x2e30, (byte) 0x0d0a, (byte) 0x0d0a, (byte) 0x534d, (byte) 0x0d0a, (byte) 0x0d0a});
 
         ByteBuffer data = ByteBuffer.wrap(Files.readAllBytes(Paths.get("src/main/resources/hello.html")));
 
