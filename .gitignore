@@ -31,3 +31,4 @@ src/main/resources/
 src/test/
 target/
 !/src/main/resources/hello.html
+!/src/main/resources/
