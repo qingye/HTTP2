@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -142,7 +141,6 @@ public class Connection {
         if (isAllowed(s, f)) {
             ByteBuffer frame = f.bytes(s.streamId);
             byte[] b = frame.array();
-            System.out.println(Arrays.toString(b));
             socket.getOutputStream().write(b);
 //            while (frame.hasRemaining()) {
 //                socket.getOutputStream().write(frame.get());
