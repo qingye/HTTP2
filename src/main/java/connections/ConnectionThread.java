@@ -1,6 +1,5 @@
 package connections;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -23,7 +22,7 @@ class ConnectionThread extends Thread {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 readLength(bb, 4);
-                int length = bb.getInt(0);
+                int length = bb.getInt(0) >> 8;
                 if (length > bb.capacity())
                     bb = ByteBuffer.allocateDirect(length);
                 readLength(bb, length);
@@ -32,7 +31,7 @@ class ConnectionThread extends Thread {
                 e.printStackTrace();
             }
             // process buffer.
-            connection.onRecieveData(bb);
+//            connection.onRecieveData(bb);
         }
     }
 
@@ -41,14 +40,16 @@ class ConnectionThread extends Thread {
 //        bb.mark();
         bb.limit(length);
         InputStream is = connection.getSocket().getInputStream();
+//        System.out.println(new String(is.readAllBytes()));
         int re;
         while (bb.remaining() > 0 && (re = is.read()) >= 0) {
+//            System.out.println(bb.remaining());
             bb.put((byte) re);
         }
 //        byte[] bytes = new byte[bb.position()];
 //        bb.reset();
 //        bb.get(bytes);
-//        System.out.println(Arrays.toString(bytes));
-        if (bb.remaining() > 0) throw new EOFException();
+//        System.out.println(new String(bytes));
+//        if (bb.remaining() > 0) throw new EOFException();
     }
 }
