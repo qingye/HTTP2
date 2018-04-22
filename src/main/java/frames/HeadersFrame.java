@@ -154,7 +154,7 @@ public class HeadersFrame extends Frame {
      * @param endStream           When set, bit 0 indicates that the header block is the last that the endpoint will send for the identified stream.
      */
     public HeadersFrame(byte padLength, boolean E, int streamDependency, byte weight, ByteBuffer headerBlockFragment, boolean endHeaders, boolean endStream) {
-        super(6 + headerBlockFragment.remaining() + padLength, HEADERS, combine((endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
+        super(6 + headerBlockFragment.remaining() + padLength, HEADERS, combine(PRIORITY, (endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
         if (padLength > length) {
             throw PROTOCOL_ERROR.error();
         }

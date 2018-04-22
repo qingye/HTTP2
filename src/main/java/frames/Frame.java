@@ -95,7 +95,7 @@ public abstract class Frame {
         out.put(flags);
         out.putInt(streamId);
         out.put(payload());
-        return out;
+        return out.rewind();
     }
 
     /**

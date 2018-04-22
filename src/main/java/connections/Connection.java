@@ -5,12 +5,16 @@ import streams.Stream;
 import streams.StreamState;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import static frames.ErrorCode.FRAME_SIZE_ERROR;
+import static frames.ErrorCode.HTTP_1_1_REQUIRED;
 import static streams.StreamState.*;
 
 public class Connection {
@@ -24,15 +28,33 @@ public class Connection {
     /**
      * Creates a connection with a socket.
      *
-     * @param connection the socket to send data over.
+     * @param socket the socket to send data over.
      */
-    public Connection(Socket connection) {
-        this.socket = connection;
+    public Connection(Socket socket) throws IOException {
+        this.socket = socket;
         this.root = new Stream(0, null);
         addStreamInternal(root);
 
+        onFirstRequest();
+
         Thread t = new ConnectionThread(this);
         t.start();
+    }
+
+    private void onFirstRequest() throws IOException {
+        InputStream is = socket.getInputStream();
+        byte[] bytes = new byte[1024];
+        is.read(bytes);
+        String s = new String(bytes);
+        System.out.println(s);
+        if (!s.contains("Upgrade-Insecure-Requests: 1")) {
+            throw HTTP_1_1_REQUIRED.error(); // not sure this is right
+        }
+
+        OutputStream os = this.socket.getOutputStream();
+        os.write("HTTP/1.1 101 Switching Protocols".getBytes());
+
+        sendWithRoot(new SettingsFrame(false, Settings.getDefault()));
     }
 
     void onRecieveData(ByteBuffer frame) {
@@ -119,18 +141,21 @@ public class Connection {
         // TODO connection should figure out which frame to send with on its own
         if (isAllowed(s, f)) {
             ByteBuffer frame = f.bytes(s.streamId);
-            while (frame.hasRemaining()) {
-                socket.getOutputStream().write(frame.get());
-            }
+            byte[] b = frame.array();
+            System.out.println(Arrays.toString(b));
+            socket.getOutputStream().write(b);
+//            while (frame.hasRemaining()) {
+//                socket.getOutputStream().write(frame.get());
+//            }
             return true;
         }
         return false;
     }
 
-    public Stream addStream() {
+    public Stream addStream() throws IOException {
         Stream s = new Stream(idIncrement++, root);
         addStreamInternal(s);
-        // TODO send headers frame
+        sendFrame(s, new HeadersFrame((byte) 0, false, s.parent.streamId, (byte) 1, ByteBuffer.allocate(0), true, false));
         return s;
     }
 

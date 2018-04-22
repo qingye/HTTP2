@@ -72,8 +72,18 @@ public class SettingsFrame extends Frame {
      *            When this bit is set, the payload of the SETTINGS frame MUST be empty.
      */
     public SettingsFrame(boolean ack, Settings settings) {
-        super(0, SETTINGS, (ack ? ACK : 0)); // TODO format payload, parameter for settings
+        super(findLength(settings), SETTINGS, (ack ? ACK : 0)); // TODO format payload, parameter for settings
         this.settings = settings;
+    }
+
+    private static int findLength(Settings settings) {
+        int c = 0;
+        for (int i : settings.values()) {
+            if (i != UNDEFINED) {
+                c++;
+            }
+        }
+        return c * 6;
     }
 
     public SettingsFrame(byte flags, ByteBuffer payload) {
@@ -89,7 +99,7 @@ public class SettingsFrame extends Frame {
 
     @Override
     public ByteBuffer payload() {
-        ByteBuffer out = ByteBuffer.allocate(36);
+        ByteBuffer out = ByteBuffer.allocate(length);
         for (Setting setting : Setting.values()) {
             int val = settings.valueOf(setting);
             if (val != UNDEFINED) {
@@ -97,6 +107,6 @@ public class SettingsFrame extends Frame {
                 out.putInt(val);
             }
         }
-        return out;
+        return out.rewind();
     }
 }
