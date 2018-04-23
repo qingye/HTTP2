@@ -1,54 +1,33 @@
 import connections.Connection;
-import frames.DataFrame;
-import streams.Stream;
 
-import javax.net.ssl.*;
-import java.io.File;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.*;
-import java.security.cert.CertificateException;
+import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import java.net.Socket;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, KeyManagementException, CertificateException, KeyStoreException, UnrecoverableKeyException {
+    private static final int HTTP_PORT = 443;
+    private static final String KEYSTORE_LOCATION = "C:/Keys/heltNy.jks";
+    private static final String KEYSTORE_PASSWORD = "123456";
 
-        SSLContext context = SSLContext.getInstance("TLSv1.2");
+    public static void main(String[] args) {
 
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("PKIX");
-        char[] password = "123456".toCharArray();
-        KeyStore ks = KeyStore.getInstance(new File("C:\\Program Files\\Java\\jdk-10.0.1\\bin\\keystore"), password);
-        kmf.init(ks, password);
+        System.setProperty("javax.net.ssl.keyStore", KEYSTORE_LOCATION);
+        System.setProperty("javax.net.ssl.keyStorePassword", KEYSTORE_PASSWORD);
 
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance("PKIX");
-        tmf.init(ks);
+        System.setProperty("javax.net.debug", "ssl:record");
 
-        context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), SecureRandom.getInstance("SHA1PRNG"));
-        SSLServerSocketFactory ssf = context.getServerSocketFactory();
+        try {
+            ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
+            SSLServerSocket serversocket = (SSLServerSocket) ssf.createServerSocket(HTTP_PORT);
 
-//        ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
-
-        ServerSocket ss = ssf.createServerSocket(80);
-
-        SSLSocket s = (SSLSocket) ss.accept();
-        s.startHandshake();
-
-
-//        ServerSocket ss = new ServerSocket(80);
-//
-//        Socket s = ss.accept();
-
-        System.out.println("Connected...");
-
-
-        Connection c = new Connection(s);
-
-        ByteBuffer data = ByteBuffer.wrap(Files.readAllBytes(Paths.get("src/main/resources/hello.html")));
-        Stream stream = c.addStream();
-        DataFrame df = new DataFrame(data, (byte) 0, false);
-        c.sendFrame(stream, df);
+            while (!Thread.currentThread().isInterrupted()) {
+                Socket client = serversocket.accept();
+                Connection c = new Connection(client);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

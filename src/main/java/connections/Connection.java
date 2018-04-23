@@ -4,9 +4,9 @@ import frames.*;
 import streams.Stream;
 import streams.StreamState;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -41,13 +41,17 @@ public class Connection {
     }
 
     private void onFirstRequest() throws IOException {
-        InputStream is = socket.getInputStream();
-        byte[] bytes = new byte[1024];
-        is.read(bytes);
-        String s = new String(bytes);
+        BufferedReader is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        char[] bytes = new char[1024];
+        String s = is.readLine();
+//        String s = new String(bytes);
         System.out.println(s);
         if (!s.contains("Upgrade-Insecure-Requests: 1")) {
             throw HTTP_1_1_REQUIRED.error(); // not sure this is right
+        }
+
+        if (socket instanceof SSLSocket) {
+            ((SSLSocket) socket).startHandshake();
         }
 
         OutputStream os = this.socket.getOutputStream();

@@ -88,8 +88,8 @@ public class DataFrame extends Frame {
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);
         out.put(padLength);
-        out.put(data.rewind());
+        out.put((ByteBuffer) data.rewind());
         out.put(ByteBuffer.allocate(padLength));
-        return out.rewind();
+        return (ByteBuffer) out.rewind();
     }
 }

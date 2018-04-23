@@ -107,6 +107,6 @@ public class SettingsFrame extends Frame {
                 out.putInt(val);
             }
         }
-        return out.rewind();
+        return (ByteBuffer) out.rewind();
     }
 }
