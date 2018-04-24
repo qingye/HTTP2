@@ -1,4 +1,4 @@
-import connections.Connection;
+package example;
 
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLParameters;

@@ -51,19 +51,23 @@ import static frames.FrameType.PING;
  */
 public class PingFrame extends Frame {
 
+    public final ByteBuffer opaqueData;
+
     /**
      * Constructs a ping frame
      *
      * @param ack      When set, bit 0 indicates that this PING frame is a PING response.
      *                 An endpoint MUST set this flag in PING responses. An endpoint MUST NOT respond to PING frames containing this flag.
      */
-    public PingFrame(int streamId, boolean ack) {
+    public PingFrame(int streamId, boolean ack, ByteBuffer opaqueData) {
         super(streamId, 8, PING, ack ? ACK : 0);
+        this.opaqueData = opaqueData;
         // TODO check that length of payload is 8 bytes
     }
 
     public PingFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), PING, flags);
+        this.opaqueData = payload.rewind();
         // TODO parse payload
     }
 

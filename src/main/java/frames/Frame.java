@@ -1,6 +1,7 @@
 package frames;
 
-import java.nio.ByteBuffer;
+        import java.nio.ByteBuffer;
+        import java.util.Arrays;
 
 /**
  * All frames begin with a fixed 9-octet header followed by a variable-length payload.
@@ -98,5 +99,15 @@ public abstract class Frame {
         out.putInt(streamId);
         out.put(payload());
         return out.flip();
+    }
+
+    @Override
+    public String toString() {
+        byte[] bytes = new byte[payload().remaining()];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = payload().get();
+        }
+        payload().rewind();
+        return this.getClass().getName() + ": length=" + length + ", flags=0b" + Integer.toBinaryString(flags) + ", payload={" + Arrays.toString(bytes) + "}";
     }
 }

@@ -3,13 +3,12 @@ package connections;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 class ConnectionThread extends Thread {
 
-    public final Connection connection;
+    public final AbstractConnection connection;
 
-    ConnectionThread(Connection connection) {
+    ConnectionThread(AbstractConnection connection) {
         this.connection = connection;
     }
 
@@ -27,17 +26,12 @@ class ConnectionThread extends Thread {
                     bb = ByteBuffer.allocateDirect(length);
                 readLength(bb, length);
                 bb.flip();
+
+                // process buffer.
+                connection.onReceiveData(bb);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-//            bb.rewind();
-//            byte[] b = new byte[bb.remaining()];
-//            for (int i = 0; i < b.length; i++) {
-//                b[i] = bb.get();
-//            }
-//            System.out.println(Arrays.toString(b));
-            // process buffer.
-            connection.onRecieveData(bb);
         }
     }
 

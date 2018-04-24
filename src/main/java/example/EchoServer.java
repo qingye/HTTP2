@@ -1,10 +1,10 @@
+package example;
+
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class EchoServer {
 

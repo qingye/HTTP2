@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,23 +16,23 @@ import static frames.ErrorCode.FRAME_SIZE_ERROR;
 import static frames.ErrorCode.HTTP_1_1_REQUIRED;
 import static streams.StreamState.*;
 
-public class Connection {
+public abstract class AbstractConnection implements ConnectionInterface {
 
-    private Settings settings = Settings.getDefault();
-    private int idIncrement = 1;
-    private Map<Integer, Stream> streamMap = new HashMap<>();
-    private Socket socket;
-    private Stream root;
+    protected Settings settings = Settings.getDefault();
+    protected int idIncrement = 1;
+    protected Map<Integer, Stream> streamMap = new HashMap<>();
+    protected Socket socket;
+    protected Stream root;
 
     /**
      * Creates a connection with a socket.
      *
      * @param socket the socket to send data over.
      */
-    public Connection(Socket socket) {
+    public AbstractConnection(Socket socket) {
         this.socket = socket;
         this.root = new Stream(0, null);
-        addStreamInternal(root);
+        addStream(root);
 
         try {
             onFirstRequest();
@@ -43,10 +41,10 @@ public class Connection {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
-    private void onFirstRequest() throws IOException {
+    @Override
+    public void onFirstRequest() throws IOException {
         BufferedReader is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
         String s = is.readLine();
@@ -60,13 +58,14 @@ public class Connection {
         }
     }
 
-    void onRecieveData(ByteBuffer frame) {
+    @Override
+    public void onReceiveData(ByteBuffer frame) throws IOException {
         int next = frame.getInt();
         int length = next >>> 8; // length is only 3 first bytes
         byte type = (byte) (next & 0xff);
         byte flags = frame.get();
         int streamId = frame.getInt() & Integer.MAX_VALUE;
-        Stream stream = streamMap.get(streamId); // mask away the R bit
+        this.idIncrement = streamId + 1;
         if (frame.remaining() != length) {
             throw FRAME_SIZE_ERROR.error();
         }
@@ -76,55 +75,48 @@ public class Connection {
         switch (ft) {
             case DATA:
                 DataFrame df = new DataFrame(flags, streamId, frame.slice());
-                System.out.println(df.streamId);
-
+                onDataFrame(df);
+                break;
             case HEADERS:
                 HeadersFrame hf = new HeadersFrame(flags, streamId, frame.slice());
-                if (stream == null) {
-                    stream = new Stream(streamId, streamMap.get(hf.streamDependency));
-                    addStreamInternal(stream);
-                }
-
-                try {
-                    addStreamInternal(new Stream(++streamId, root));
-                    HeadersFrame hah = new HeadersFrame(streamId, true, true, (byte) 0, ByteBuffer.wrap("Content-Type: text/html\r\n\r\n".getBytes()));
-                    sendFrame(hah);
-                    ByteBuffer bf = ByteBuffer.wrap(Files.readAllBytes(Paths.get("src/main/resources/hello.html")));
-                    DataFrame html = new DataFrame(streamId, bf, false);
-                    sendFrame(html);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                onHeadersFrame(hf);
                 break;
             case PRIORITY:
-                PriorityFrame prf = new PriorityFrame(flags, stream.streamId, frame.slice());
-
+                PriorityFrame prf = new PriorityFrame(flags, streamId, frame.slice());
+                onPriorityFrame(prf);
+                break;
             case RST_STREAM:
-                RSTStreamFrame rstsf = new RSTStreamFrame(flags, stream.streamId, frame.slice());
-
+                RSTStreamFrame rsf = new RSTStreamFrame(flags, streamId, frame.slice());
+                onRSTStreamFrame(rsf);
+                break;
             case SETTINGS:
-                SettingsFrame sf = new SettingsFrame(flags, stream.streamId, frame.slice());
-                this.settings.setSettings(sf.settings);
+                SettingsFrame sf = new SettingsFrame(flags, streamId, frame.slice());
+                onSettingsFrame(sf);
                 break;
             case PUSH_PROMISE:
-                PushPromiseFrame ppf = new PushPromiseFrame(flags, stream.streamId, frame.slice());
-
+                PushPromiseFrame ppf = new PushPromiseFrame(flags, streamId, frame.slice());
+                onPushPromiseFrame(ppf);
+                break;
             case PING:
-                PingFrame pif = new PingFrame(flags, stream.streamId, frame.slice());
-
+                PingFrame pif = new PingFrame(flags, streamId, frame.slice());
+                onPingFrame(pif);
+                break;
             case GOAWAY:
-                GoAwayFrame gaf = new GoAwayFrame(flags, stream.streamId, frame.slice());
-
+                GoAwayFrame gaf = new GoAwayFrame(flags, streamId, frame.slice());
+                onGoAwayFrame(gaf);
+                break;
             case WINDOW_UPDATE:
-                WindowUpdateFrame wuf = new WindowUpdateFrame(flags, stream.streamId, frame.slice());
-
+                WindowUpdateFrame wuf = new WindowUpdateFrame(flags, streamId, frame.slice());
+                onWindowUpdateFrame(wuf);
+                break;
             case CONTINUATION:
-                ContinuationFrame cf = new ContinuationFrame(flags, stream.streamId, frame.slice());
-
+                ContinuationFrame cf = new ContinuationFrame(flags, streamId, frame.slice());
+                onContinuationFrame(cf);
+                break;
         }
     }
 
-    private void addStreamInternal(Stream s) {
+    public void addStream(Stream s) {
         streamMap.put(s.streamId, s);
     }
 
@@ -174,7 +166,7 @@ public class Connection {
 
     public Stream addStream() throws IOException {
         Stream s = new Stream(idIncrement++, root);
-        addStreamInternal(s);
+        addStream(s);
         sendFrame(s, new HeadersFrame(s.streamId, (byte) 0, false, s.parent.streamId, (byte) 1, ByteBuffer.allocate(0), true, false));
         return s;
     }
