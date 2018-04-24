@@ -62,13 +62,13 @@ public class ContinuationFrame extends Frame {
      *                            stream as a connection error of type PROTOCOL_ERROR.
      * @param headerBlockFragment A header block fragment.
      */
-    public ContinuationFrame(boolean endHeaders, ByteBuffer headerBlockFragment) {
-        super(headerBlockFragment.remaining(), CONTINUATION, endHeaders ? END_HEADERS : 0);
+    public ContinuationFrame(int streamId, boolean endHeaders, ByteBuffer headerBlockFragment) {
+        super(streamId, headerBlockFragment.remaining(), CONTINUATION, endHeaders ? END_HEADERS : 0);
         this.headerBlockFragment = headerBlockFragment;
     }
 
-    public ContinuationFrame(byte flags, ByteBuffer payload) {
-        super(payload.remaining(), CONTINUATION, flags);
+    public ContinuationFrame(byte flags, int streamId, ByteBuffer payload) {
+        super(streamId, payload.remaining(), CONTINUATION, flags);
         this.headerBlockFragment = payload.slice();
     }
 

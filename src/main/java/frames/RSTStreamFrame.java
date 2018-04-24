@@ -49,7 +49,7 @@ import static frames.FrameType.RST_STREAM;
  */
 public class RSTStreamFrame extends Frame {
 
-    private final ErrorCode errorCode;
+    public final ErrorCode errorCode;
 
     /**
      * Constructs an RST stream frame
@@ -57,13 +57,13 @@ public class RSTStreamFrame extends Frame {
      * @param errorCode An unsigned, 32-bit integer identifying the error code (Section 7).
      *                  The error code indicates why the stream is being terminated.
      */
-    public RSTStreamFrame(ErrorCode errorCode) {
-        super(4, RST_STREAM);
+    public RSTStreamFrame(int streamId, ErrorCode errorCode) {
+        super(streamId, 4, RST_STREAM);
         this.errorCode = errorCode;
     }
 
-    public RSTStreamFrame(byte flags, ByteBuffer payload) {
-        super(payload.remaining(), RST_STREAM, flags);
+    public RSTStreamFrame(byte flags, int streamId, ByteBuffer payload) {
+        super(streamId, payload.remaining(), RST_STREAM, flags);
         this.errorCode = ErrorCode.from(payload.getInt());
     }
 

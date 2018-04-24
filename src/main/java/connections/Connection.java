@@ -4,11 +4,13 @@ import frames.*;
 import streams.Stream;
 import streams.StreamState;
 
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,80 +31,95 @@ public class Connection {
      *
      * @param socket the socket to send data over.
      */
-    public Connection(Socket socket) throws IOException {
+    public Connection(Socket socket) {
         this.socket = socket;
         this.root = new Stream(0, null);
         addStreamInternal(root);
 
-        onFirstRequest();
+        try {
+            onFirstRequest();
+            Thread t = new ConnectionThread(this);
+            t.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        Thread t = new ConnectionThread(this);
-        t.start();
     }
 
     private void onFirstRequest() throws IOException {
         BufferedReader is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        char[] bytes = new char[1024];
+
         String s = is.readLine();
-//        String s = new String(bytes);
-        System.out.println(s);
-        if (!s.contains("Upgrade-Insecure-Requests: 1")) {
-            throw HTTP_1_1_REQUIRED.error(); // not sure this is right
+//            while ((s = is.readLine()) == null); // await first message
+
+        if (s.equals("PRI * HTTP/2.0")) {
+            System.out.println("Client request for HTTP/2.0");
+            sendFrame(new SettingsFrame(0, false, Settings.getUndefined()));
+        } else {
+            throw HTTP_1_1_REQUIRED.error();
         }
-
-        if (socket instanceof SSLSocket) {
-            ((SSLSocket) socket).startHandshake();
-        }
-
-        OutputStream os = this.socket.getOutputStream();
-        os.write("HTTP/1.1 101 Switching Protocols".getBytes());
-
-        sendWithRoot(new SettingsFrame(false, Settings.getDefault()));
     }
 
     void onRecieveData(ByteBuffer frame) {
         int next = frame.getInt();
-        int length = next >> 8; // length is only 3 bytes
+        int length = next >>> 8; // length is only 3 first bytes
         byte type = (byte) (next & 0xff);
         byte flags = frame.get();
-        Stream stream = streamMap.get(frame.getInt() & Integer.MAX_VALUE); // mask away the R bit
+        int streamId = frame.getInt() & Integer.MAX_VALUE;
+        Stream stream = streamMap.get(streamId); // mask away the R bit
         if (frame.remaining() != length) {
             throw FRAME_SIZE_ERROR.error();
         }
         // remaining bytes in data is payload
-        Frame f;
         FrameType ft = FrameType.from(type);
         // TODO act upon the recieved data
         switch (ft) {
             case DATA:
-                f = new DataFrame(flags, frame.slice());
+                DataFrame df = new DataFrame(flags, streamId, frame.slice());
+                System.out.println(df.streamId);
 
             case HEADERS:
-                f = new HeadersFrame(flags, frame.slice());
+                HeadersFrame hf = new HeadersFrame(flags, streamId, frame.slice());
+                if (stream == null) {
+                    stream = new Stream(streamId, streamMap.get(hf.streamDependency));
+                    addStreamInternal(stream);
+                }
 
+                try {
+                    addStreamInternal(new Stream(++streamId, root));
+                    HeadersFrame hah = new HeadersFrame(streamId, true, true, (byte) 0, ByteBuffer.wrap("Content-Type: text/html\r\n\r\n".getBytes()));
+                    sendFrame(hah);
+                    ByteBuffer bf = ByteBuffer.wrap(Files.readAllBytes(Paths.get("src/main/resources/hello.html")));
+                    DataFrame html = new DataFrame(streamId, bf, false);
+                    sendFrame(html);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
             case PRIORITY:
-                f = new PriorityFrame(flags, frame.slice());
+                PriorityFrame prf = new PriorityFrame(flags, stream.streamId, frame.slice());
 
             case RST_STREAM:
-                f = new RSTStreamFrame(flags, frame.slice());
+                RSTStreamFrame rstsf = new RSTStreamFrame(flags, stream.streamId, frame.slice());
 
             case SETTINGS:
-                f = new SettingsFrame(flags, frame.slice());
-
+                SettingsFrame sf = new SettingsFrame(flags, stream.streamId, frame.slice());
+                this.settings.setSettings(sf.settings);
+                break;
             case PUSH_PROMISE:
-                f = new PushPromiseFrame(flags, frame.slice());
+                PushPromiseFrame ppf = new PushPromiseFrame(flags, stream.streamId, frame.slice());
 
             case PING:
-                f = new PingFrame(flags, frame.slice());
+                PingFrame pif = new PingFrame(flags, stream.streamId, frame.slice());
 
             case GOAWAY:
-                f = new GoAwayFrame(flags, frame.slice());
+                GoAwayFrame gaf = new GoAwayFrame(flags, stream.streamId, frame.slice());
 
             case WINDOW_UPDATE:
-                f = new WindowUpdateFrame(flags, frame.slice());
+                WindowUpdateFrame wuf = new WindowUpdateFrame(flags, stream.streamId, frame.slice());
 
             case CONTINUATION:
-                f = new ContinuationFrame(flags, frame.slice());
+                ContinuationFrame cf = new ContinuationFrame(flags, stream.streamId, frame.slice());
 
         }
     }
@@ -113,7 +130,7 @@ public class Connection {
 
     private boolean isAllowed(Stream s, Frame f) {
         StreamState ss = s.getState();
-        switch (f.getType()) {
+        switch (f.type) {
             case DATA:
                 return s.streamId != 0 && (ss == OPEN || ss == HALF_CLOSED_LOCAL);
             case HEADERS:
@@ -136,8 +153,8 @@ public class Connection {
         }
     }
 
-    public boolean sendWithRoot(Frame f) throws IOException {
-        return sendFrame(root, f);
+    public boolean sendFrame(Frame f) throws IOException {
+        return sendFrame(streamMap.get(f.streamId), f);
     }
 
     public boolean sendFrame(Stream s, Frame f) throws IOException {
@@ -146,6 +163,7 @@ public class Connection {
             ByteBuffer frame = f.bytes(s.streamId);
             byte[] b = frame.array();
             socket.getOutputStream().write(b);
+            socket.getOutputStream().flush();
 //            while (frame.hasRemaining()) {
 //                socket.getOutputStream().write(frame.get());
 //            }
@@ -157,7 +175,7 @@ public class Connection {
     public Stream addStream() throws IOException {
         Stream s = new Stream(idIncrement++, root);
         addStreamInternal(s);
-        sendFrame(s, new HeadersFrame((byte) 0, false, s.parent.streamId, (byte) 1, ByteBuffer.allocate(0), true, false));
+        sendFrame(s, new HeadersFrame(s.streamId, (byte) 0, false, s.parent.streamId, (byte) 1, ByteBuffer.allocate(0), true, false));
         return s;
     }
 

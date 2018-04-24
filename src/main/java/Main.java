@@ -1,9 +1,10 @@
 import connections.Connection;
 
 import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
-import java.net.Socket;
+import javax.net.ssl.SSLSocket;
 
 public class Main {
 
@@ -16,18 +17,23 @@ public class Main {
         System.setProperty("javax.net.ssl.keyStore", KEYSTORE_LOCATION);
         System.setProperty("javax.net.ssl.keyStorePassword", KEYSTORE_PASSWORD);
 
-        System.setProperty("javax.net.debug", "ssl:record");
+//        System.setProperty("javax.net.debug", "ssl:record");
 
         try {
             ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
-            SSLServerSocket serversocket = (SSLServerSocket) ssf.createServerSocket(HTTP_PORT);
+            SSLServerSocket serverSocket = (SSLServerSocket) ssf.createServerSocket(HTTP_PORT);
+            SSLParameters sp = serverSocket.getSSLParameters();
+            sp.setApplicationProtocols(new String[]{"h2"});
+            serverSocket.setSSLParameters(sp);
 
             while (!Thread.currentThread().isInterrupted()) {
-                Socket client = serversocket.accept();
-                Connection c = new Connection(client);
+                SSLSocket client = (SSLSocket) serverSocket.accept();
+                if (client.isConnected()) {
+                    Connection c = new Connection(client);
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
     }
 }

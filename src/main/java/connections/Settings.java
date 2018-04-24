@@ -23,6 +23,15 @@ public class Settings {
         values[5] = maxHeaderListSize;
     }
 
+    public void setSettings(Settings newSettings) {
+        for (int i = 0; i < values.length; i++) {
+            int val = newSettings.values[i];
+            if (val != UNDEFINED) {
+                values[i] = val;
+            }
+        }
+    }
+
     public static Settings getUndefined() {
         return new Settings(UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED, UNDEFINED);
     }

@@ -63,7 +63,7 @@ import static frames.FrameType.SETTINGS;
  */
 public class SettingsFrame extends Frame {
 
-    private final Settings settings;
+    public final Settings settings;
 
     /**
      * Constructs a settings frame
@@ -71,8 +71,8 @@ public class SettingsFrame extends Frame {
      * @param ack When set, bit 0 indicates that this frame acknowledges receipt and application of the peer's SETTINGS frame.
      *            When this bit is set, the payload of the SETTINGS frame MUST be empty.
      */
-    public SettingsFrame(boolean ack, Settings settings) {
-        super(findLength(settings), SETTINGS, (ack ? ACK : 0)); // TODO format payload, parameter for settings
+    public SettingsFrame(int streamId, boolean ack, Settings settings) {
+        super(streamId, findLength(settings), SETTINGS, (ack ? ACK : 0)); // TODO format payload, parameter for settings
         this.settings = settings;
     }
 
@@ -86,8 +86,8 @@ public class SettingsFrame extends Frame {
         return c * 6;
     }
 
-    public SettingsFrame(byte flags, ByteBuffer payload) {
-        super(payload.remaining(), SETTINGS, flags);
+    public SettingsFrame(byte flags, int streamId, ByteBuffer payload) {
+        super(streamId, payload.remaining(), SETTINGS, flags);
         Settings sets = Settings.getUndefined();
         while (payload.hasRemaining()) {
             Setting set = Setting.from(payload.getShort());
@@ -107,6 +107,6 @@ public class SettingsFrame extends Frame {
                 out.putInt(val);
             }
         }
-        return (ByteBuffer) out.rewind();
+        return out.flip();
     }
 }

@@ -108,11 +108,11 @@ import static frames.FrameType.HEADERS;
  */
 public class HeadersFrame extends Frame {
 
-    private final int streamDependency;
-    private final byte padLength;
-    private final boolean E;
-    private final byte weight;
-    private final ByteBuffer headerBlockFragment;
+    public final int streamDependency;
+    public final byte padLength;
+    public final boolean E;
+    public final byte weight;
+    public final ByteBuffer headerBlockFragment;
 
 
     /**
@@ -124,8 +124,8 @@ public class HeadersFrame extends Frame {
      * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
      * @param endStream           When set, bit 0 indicates that the header block is the last that the endpoint will send for the identified stream.
      */
-    public HeadersFrame(boolean endStream, boolean endHeaders, byte padLength, ByteBuffer headerBlockFragment) {
-        super(6 + headerBlockFragment.remaining() + padLength, HEADERS, combine((endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
+    public HeadersFrame(int streamId, boolean endStream, boolean endHeaders, byte padLength, ByteBuffer headerBlockFragment) {
+        super(streamId, 6 + headerBlockFragment.remaining() + padLength, HEADERS, combine((endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
         if (padLength > length) {
             throw PROTOCOL_ERROR.error();
         }
@@ -153,8 +153,8 @@ public class HeadersFrame extends Frame {
      * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
      * @param endStream           When set, bit 0 indicates that the header block is the last that the endpoint will send for the identified stream.
      */
-    public HeadersFrame(byte padLength, boolean E, int streamDependency, byte weight, ByteBuffer headerBlockFragment, boolean endHeaders, boolean endStream) {
-        super(6 + headerBlockFragment.remaining() + padLength, HEADERS, combine(PRIORITY, (endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
+    public HeadersFrame(int streamId, byte padLength, boolean E, int streamDependency, byte weight, ByteBuffer headerBlockFragment, boolean endHeaders, boolean endStream) {
+        super(streamId, 6 + headerBlockFragment.remaining() + padLength, HEADERS, combine(PRIORITY, (endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
         if (padLength > length) {
             throw PROTOCOL_ERROR.error();
         }
@@ -165,16 +165,25 @@ public class HeadersFrame extends Frame {
         this.weight = weight;
     }
 
-    public HeadersFrame(byte flags, ByteBuffer payload) {
-        super(payload.remaining(), HEADERS, flags);
-        this.padLength = payload.get();
-        int next = payload.getInt();
-        this.E = (next & -2147483648) != 0;
-        this.streamDependency = next & 2147483647;
-        this.weight = payload.get();
-        ByteBuffer slice = payload.slice();
-        slice.limit(slice.limit() - padLength);
-        this.headerBlockFragment = slice;
+    public HeadersFrame(byte flags, int streamId, ByteBuffer payload) {
+        super(streamId, payload.remaining(), HEADERS, flags);
+        if (Flags.isSet(flags, PADDED)) {
+            this.padLength = payload.get();
+        } else {
+            this.padLength = 0;
+        }
+        if (Flags.isSet(flags, PRIORITY)) {
+            int next = payload.getInt();
+            this.E = (next & -2147483648) != 0;
+            this.streamDependency = next & 2147483647;
+            this.weight = payload.get();
+        } else {
+            this.E = false;
+            this.streamDependency = -1;
+            this.weight = 0;
+        }
+        payload.limit(payload.limit() - (padLength & 0xff));
+        this.headerBlockFragment = payload.slice();
     }
 
 

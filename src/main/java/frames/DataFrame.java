@@ -55,8 +55,8 @@ public class DataFrame extends Frame {
      * @param endStream When set, bit 0 indicates that this frame is the last that the endpoint will send for the identified stream.
      *                  Setting this flag causes the stream to enter one of the "half-closed" states or the "closed" state.
      */
-    public DataFrame(ByteBuffer data, byte padLength, boolean endStream) {
-        super(4 + data.remaining() + padLength, DATA, combine((endStream ? END_STREAM : 0), (padLength == 0) ? 0 : PADDED));
+    public DataFrame(int streamId, ByteBuffer data, byte padLength, boolean endStream) {
+        super(streamId, 4 + data.remaining() + padLength, DATA, combine((endStream ? END_STREAM : 0), (padLength == 0) ? 0 : PADDED));
         if (padLength > length) {
             throw PROTOCOL_ERROR.error();
         }
@@ -72,13 +72,17 @@ public class DataFrame extends Frame {
      * @param endStream When set, bit 0 indicates that this frame is the last that the endpoint will send for the identified stream.
      *                  Setting this flag causes the stream to enter one of the "half-closed" states or the "closed" state.
      */
-    public DataFrame(ByteBuffer data, boolean endStream) {
-        this(data, (byte) 0, endStream);
+    public DataFrame(int streamId, ByteBuffer data, boolean endStream) {
+        this(streamId, data, (byte) 0, endStream);
     }
 
-    public DataFrame(byte flags, ByteBuffer payload) {
-        super(payload.remaining(), DATA, flags);
-        this.padLength = payload.get();
+    public DataFrame(byte flags, int streamId, ByteBuffer payload) {
+        super(streamId, payload.remaining(), DATA, flags);
+        if (isSet(flags, PADDED)) {
+            this.padLength = payload.get();
+        } else {
+            this.padLength = 0;
+        }
         ByteBuffer slice = payload.slice();
         slice.limit(slice.limit() - padLength);
         this.data = slice;
@@ -88,8 +92,8 @@ public class DataFrame extends Frame {
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);
         out.put(padLength);
-        out.put((ByteBuffer) data.rewind());
+        out.put(data.rewind());
         out.put(ByteBuffer.allocate(padLength));
-        return (ByteBuffer) out.rewind();
+        return out.flip();
     }
 }

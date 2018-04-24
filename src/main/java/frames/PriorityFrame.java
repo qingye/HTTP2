@@ -61,9 +61,9 @@ import static frames.FrameType.PRIORITY;
 public class PriorityFrame extends Frame {
 
 
-    private final boolean E;
-    private final int streamDependency;
-    private final byte weight;
+    public final boolean E;
+    public final int streamDependency;
+    public final byte weight;
 
     /**
      * Constructs a priority frame
@@ -73,8 +73,8 @@ public class PriorityFrame extends Frame {
      * @param weight           An unsigned 8-bit integer representing a priority weight for the stream.
      *                         Add one to the value to obtain a weight between 1 and 256.
      */
-    public PriorityFrame(boolean E, int streamDependency, byte weight) {
-        super(5, PRIORITY);
+    public PriorityFrame(int streamId, boolean E, int streamDependency, byte weight) {
+        super(streamId, 5, PRIORITY);
         if (streamDependency < 0) {
             throw new IllegalArgumentException("Invalid stream dependency");
         }
@@ -83,8 +83,8 @@ public class PriorityFrame extends Frame {
         this.weight = weight;
     }
 
-    public PriorityFrame(byte flags, ByteBuffer payload) {
-        super(payload.remaining(), PRIORITY, flags);
+    public PriorityFrame(byte flags, int streamId, ByteBuffer payload) {
+        super(streamId, payload.remaining(), PRIORITY, flags);
         int next = payload.getInt();
         this.E = (next & -2147483648) != 0;
         this.streamDependency = next & 2147483647;

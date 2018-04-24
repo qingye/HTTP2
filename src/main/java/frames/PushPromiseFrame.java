@@ -113,9 +113,9 @@ import static frames.FrameType.PUSH_PROMISE;
  */
 public class PushPromiseFrame extends Frame {
 
-    private final byte padLength;
-    private final int promisedStreamId;
-    private final ByteBuffer headerBlockFragment;
+    public final byte padLength;
+    public final int promisedStreamId;
+    public final ByteBuffer headerBlockFragment;
 
     /**
      * Constructs a push promise frame
@@ -127,16 +127,16 @@ public class PushPromiseFrame extends Frame {
      * @param headerBlockFragment A header block fragment containing request header fields.
      * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
      */
-    public PushPromiseFrame(byte padLength, int promisedStreamID, ByteBuffer headerBlockFragment, boolean endHeaders) {
-        super(5 + headerBlockFragment.remaining() + padLength, PUSH_PROMISE, combine((padLength != 0) ? PADDED : 0, (endHeaders ? END_HEADERS : 0)));
+    public PushPromiseFrame(int streamId, byte padLength, int promisedStreamID, ByteBuffer headerBlockFragment, boolean endHeaders) {
+        super(streamId, 5 + headerBlockFragment.remaining() + padLength, PUSH_PROMISE, combine((padLength != 0) ? PADDED : 0, (endHeaders ? END_HEADERS : 0)));
         this.padLength = padLength;
         this.promisedStreamId = promisedStreamID;
         this.headerBlockFragment = headerBlockFragment;
         // TODO ensure SETTINGS_ENABLE_PUSH is not disabled when sending
     }
 
-    public PushPromiseFrame(byte flags, ByteBuffer payload) {
-        super(payload.remaining(), PUSH_PROMISE, flags);
+    public PushPromiseFrame(byte flags, int streamId, ByteBuffer payload) {
+        super(streamId, payload.remaining(), PUSH_PROMISE, flags);
         this.padLength = payload.get();
         this.promisedStreamId = payload.getInt() & 2147483647;
         ByteBuffer slice = payload.slice();

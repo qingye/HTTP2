@@ -3,10 +3,11 @@ package connections;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 class ConnectionThread extends Thread {
 
-    private final Connection connection;
+    public final Connection connection;
 
     ConnectionThread(Connection connection) {
         this.connection = connection;
@@ -17,12 +18,11 @@ class ConnectionThread extends Thread {
 
     @Override
     public void run() {
-        ByteBuffer bb = ByteBuffer.allocateDirect(1024 * 1024); // off heap memory.
-
         while (!Thread.currentThread().isInterrupted()) {
+            ByteBuffer bb = ByteBuffer.allocateDirect(1024 * 1024); // off heap memory.
             try {
-                readLength(bb, 4);
-                int length = bb.getInt(0) >> 8;
+                readLength(bb, 9);
+                int length = bb.getInt(0) >>> 8;
                 if (length > bb.capacity())
                     bb = ByteBuffer.allocateDirect(length);
                 readLength(bb, length);
@@ -30,15 +30,21 @@ class ConnectionThread extends Thread {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+//            bb.rewind();
+//            byte[] b = new byte[bb.remaining()];
+//            for (int i = 0; i < b.length; i++) {
+//                b[i] = bb.get();
+//            }
+//            System.out.println(Arrays.toString(b));
             // process buffer.
-//            connection.onRecieveData(bb);
+            connection.onRecieveData(bb);
         }
     }
 
     private void readLength(ByteBuffer bb, int length) throws IOException {
-        bb.clear();
+//        bb.clear();
 //        bb.mark();
-        bb.limit(length);
+        bb.limit(length+9);
         InputStream is = connection.getSocket().getInputStream();
 //        System.out.print(new String(is.readAllBytes()));
         int re;

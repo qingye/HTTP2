@@ -53,9 +53,10 @@ import java.nio.ByteBuffer;
  */
 public abstract class Frame {
 
-    protected final int length;
-    protected final byte flags;
-    private final FrameType type;
+    public final int length;
+    public final byte flags;
+    public final FrameType type;
+    public final int streamId;
 
     /**
      * Constructs a frame header
@@ -67,15 +68,16 @@ public abstract class Frame {
      * @param flags  An 8-bit field reserved for boolean flags specific to the frame type.
      *               Flag are assigned semantics specific to the indicated frame type. Flag that have no defined semantics for a particular frame type MUST be ignored and MUST be left unset (0x0) when sending.
      */
-    public Frame(int length, FrameType type, byte flags) {
+    public Frame(int streamId, int length, FrameType type, byte flags) {
         // TODO check for errors maybe?
         this.length = length;
         this.type = type;
         this.flags = flags;
+        this.streamId = streamId;
     }
 
-    public Frame(int length, FrameType type) {
-        this(length, type, (byte) 0);
+    public Frame(int streamId, int length, FrameType type) {
+        this(streamId, length, type, (byte) 0);
     }
 
     /**
@@ -89,33 +91,12 @@ public abstract class Frame {
      */
     public ByteBuffer bytes(int streamId) {
         ByteBuffer out = ByteBuffer.allocate(9 + length);
-        out.putShort((short) (length >> 8));
+        out.putShort((short) (length >>> 8));
         out.put((byte) (length & 0xff));
         out.put(type.code);
         out.put(flags);
         out.putInt(streamId);
         out.put(payload());
-        return (ByteBuffer) out.rewind();
-    }
-
-    /**
-     * @return the type of this frame
-     */
-    public FrameType getType() {
-        return type;
-    }
-
-    /**
-     * @return the length of the payload of this frame
-     */
-    public int getLength() {
-        return length;
-    }
-
-    /**
-     * @return the flags of this frame
-     */
-    public byte getFlags() {
-        return flags;
+        return out.flip();
     }
 }

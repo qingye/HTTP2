@@ -75,7 +75,7 @@ import static frames.FrameType.WINDOW_UPDATE;
  */
 public class WindowUpdateFrame extends Frame {
 
-    private final int windowSizeIncrement;
+    public final int windowSizeIncrement;
 
     /**
      * Constructs a window update frame
@@ -83,16 +83,16 @@ public class WindowUpdateFrame extends Frame {
      * @param windowSizeIncrement An unsigned 31-bit integer indicating the number of octets that the sender can transmit in addition to the existing flow-control window.
      *                            The legal range for the increment to the flow-control window is 1 to 231-1 (2,147,483,647) octets.
      */
-    public WindowUpdateFrame(int windowSizeIncrement) {
-        super(4, WINDOW_UPDATE);
+    public WindowUpdateFrame(int streamId, int windowSizeIncrement) {
+        super(streamId, 4, WINDOW_UPDATE);
         if (windowSizeIncrement <= 0) {
             throw PROTOCOL_ERROR.error();
         }
         this.windowSizeIncrement = windowSizeIncrement;
     }
 
-    public WindowUpdateFrame(byte flags, ByteBuffer payload) {
-        super(payload.remaining(), WINDOW_UPDATE, flags);
+    public WindowUpdateFrame(byte flags, int streamId, ByteBuffer payload) {
+        super(streamId, payload.remaining(), WINDOW_UPDATE, flags);
         this.windowSizeIncrement = payload.getInt() & 2147483647;
     }
 

@@ -141,9 +141,9 @@ import static frames.FrameType.GOAWAY;
  */
 public class GoAwayFrame extends Frame {
 
-    private final int lastStreamId;
-    private final ErrorCode errorCode;
-    private final ByteBuffer additionalData;
+    public final int lastStreamId;
+    public final ErrorCode errorCode;
+    public final ByteBuffer additionalData;
 
     /**
      * Constructs a go away frame
@@ -152,8 +152,8 @@ public class GoAwayFrame extends Frame {
      * @param errorCode      The reason for closing the connection.
      * @param additionalData The payload of this frame. The structure and content of the frame payload is dependent entirely on the frame type.
      */
-    public GoAwayFrame(int lastStreamId, ErrorCode errorCode, ByteBuffer additionalData) {
-        super(8 + additionalData.remaining(), GOAWAY);
+    public GoAwayFrame(int streamId, int lastStreamId, ErrorCode errorCode, ByteBuffer additionalData) {
+        super(streamId, 8 + additionalData.remaining(), GOAWAY);
         if (lastStreamId < 0) {
             throw new IllegalArgumentException("Invalid lastStreamId");
         }
@@ -162,8 +162,8 @@ public class GoAwayFrame extends Frame {
         this.additionalData = additionalData;
     }
 
-    public GoAwayFrame(byte flags, ByteBuffer payload) {
-        super(payload.remaining(), GOAWAY, flags);
+    public GoAwayFrame(byte flags, int streamId, ByteBuffer payload) {
+        super(streamId, payload.remaining(), GOAWAY, flags);
         this.lastStreamId = payload.getInt() & 2147483647;
         this.errorCode = ErrorCode.from(payload.getInt());
         this.additionalData = payload.slice();
