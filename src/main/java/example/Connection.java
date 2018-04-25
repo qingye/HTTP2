@@ -36,7 +36,7 @@ public class Connection extends AbstractConnection {
 
         try {
 //            addStream(new Stream(stream.streamId, root));
-            HeadersFrame hah = new HeadersFrame(stream.streamId, false, true, (byte) 0, ByteBuffer.wrap("status : 200\r\naccept-ranges : bytes\r\ncontent-length : 155\r\nContent-Type: text/html;charset=utf-8\r\n\r\n".getBytes()), true, 0, (short) 256);
+            HeadersFrame hah = new HeadersFrame(stream.streamId, false, true, (byte) 0, ByteBuffer.wrap(":status: 200\r\naccept-ranges: bytes\r\ncontent-length: 155\r\nContent-Type: text/html;charset=utf-8\r\n\r\n".getBytes()), true, 0, (short) 256);
             sendFrame(hah);
             ByteBuffer bf = ByteBuffer.wrap(Files.readAllBytes(Paths.get("src/main/resources/hello.html")));
             DataFrame html = new DataFrame(stream.streamId, bf, true);

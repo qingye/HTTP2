@@ -1,6 +1,5 @@
 package connections;
 
-import com.twitter.hpack.Encoder;
 import frames.*;
 import streams.Stream;
 import streams.StreamState;
@@ -10,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,7 +56,8 @@ public abstract class AbstractConnection implements ConnectionInterface {
 
         if (s.equals("PRI * HTTP/2.0")) {
             System.out.println("Client request for HTTP/2.0");
-            sendFrame(new SettingsFrame(0, false, ConnectionSettings.getUndefined()));
+            ConnectionSettings cs = ConnectionSettings.getUndefined();
+            sendFrame(new SettingsFrame(0, false, cs));
         } else {
             throw HTTP_1_1_REQUIRED.error();
         }
@@ -182,20 +181,8 @@ public abstract class AbstractConnection implements ConnectionInterface {
             f.streamId = s.streamId;
             ByteBuffer frame = f.bytes();
             byte[] b = frame.array();
-//            if (f.type == FrameType.HEADERS) {
-//                Encoder encoder = new Encoder(4096);
-//                socket.getOutputStream().write(Arrays.copyOf(b, 9));
-//                byte[] bytes = new byte[b.length - 9];
-//                System.arraycopy(b, 9, bytes, 0, bytes.length);
-//                String string = new String(bytes);
-//                String[] split = string.split("[\\n\\r]+");
-//                for (String s1 : split) {
-//                    String[] s1Split = s1.split(":", 2);
-//                    encoder.encodeHeader(socket.getOutputStream(), s1Split[0].getBytes(), s1Split[1].getBytes(), false);
-//                }
-//            } else {
-                socket.getOutputStream().write(b);
-//            }
+
+            socket.getOutputStream().write(b);
             socket.getOutputStream().flush();
 //            while (frame.hasRemaining()) {
 //                socket.getOutputStream().write(frame.get());

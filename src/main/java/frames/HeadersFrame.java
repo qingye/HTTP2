@@ -1,7 +1,12 @@
 package frames;
 
+import com.twitter.hpack.Decoder;
 import com.twitter.hpack.Encoder;
+import com.twitter.hpack.HeaderListener;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -211,7 +216,41 @@ public class HeadersFrame extends Frame {
         if (Flags.isSet(this.flags, PADDED)) {
             out.put(ByteBuffer.allocate(padLength));
         }
-        return out.flip();
+
+        return compress(out.flip());
+    }
+
+    private ByteBuffer compress(ByteBuffer bb) {
+        Encoder encoder = new Encoder(4096);
+        byte[] bytes = new byte[bb.remaining()];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = bb.get();
+        }
+        String string = new String(bytes);
+        String[] split = string.split("[\\n\\r]+");
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        try {
+            for (String s1 : split) {
+                String[] s1Split = s1.split(":", 3);
+                if (s1Split.length == 3) encoder.encodeHeader(os, (":" + s1Split[1]).getBytes(), s1Split[2].getBytes(), false);
+                else encoder.encodeHeader(os, s1Split[0].getBytes(), s1Split[1].getBytes(), false);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Decoder decoder = new Decoder(4096, 4096);
+        try {
+            decoder.decode(new ByteArrayInputStream(os.toByteArray()), new HeaderListener() {
+                @Override
+                public void addHeader(byte[] name, byte[] value, boolean sensitive) {
+                    System.out.println(new String(name) + ", " + new String(value));
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println(new String(os.toByteArray()));
+        return ByteBuffer.wrap(os.toByteArray());
     }
 
     @Override
