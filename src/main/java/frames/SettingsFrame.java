@@ -86,6 +86,13 @@ public class SettingsFrame extends Frame {
         return c * 6;
     }
 
+    /**
+     * Crates a settings frame with the specified flags, streamId and payload.
+     *
+     * @param flags the flags of this frame.
+     * @param streamId the stream id of this frame.
+     * @param payload the payload of this frame.
+     */
     public SettingsFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), SETTINGS, flags);
         Settings sets = Settings.getUndefined();
@@ -108,5 +115,10 @@ public class SettingsFrame extends Frame {
             }
         }
         return out.flip();
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", settings={" + settings.toString() + "}";
     }
 }

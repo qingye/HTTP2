@@ -102,6 +102,12 @@ public enum ErrorCode {
         this.message = message;
     }
 
+    /**
+     * Finds the corresponding error to a code.
+     *
+     * @param code the code of the error.
+     * @return the error with this code.
+     */
     public static ErrorCode from(int code) {
         return values()[code];
     }

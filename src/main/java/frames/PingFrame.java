@@ -1,6 +1,7 @@
 package frames;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Random;
 
 import static frames.Flags.ACK;
@@ -65,6 +66,13 @@ public class PingFrame extends Frame {
         // TODO check that length of payload is 8 bytes
     }
 
+    /**
+     * Crates a ping frame with the specified flags, streamId and payload.
+     *
+     * @param flags the flags of this frame.
+     * @param streamId the stream id of this frame.
+     * @param payload the payload of this frame.
+     */
     public PingFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), PING, flags);
         this.opaqueData = payload.rewind();
@@ -79,5 +87,16 @@ public class PingFrame extends Frame {
         new Random().nextBytes(randomBytes);
         out.put(randomBytes);
         return out;
+    }
+
+    @Override
+    public String toString() {
+        opaqueData.rewind();
+        byte[] bytes = new byte[opaqueData.remaining()];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = opaqueData.get();
+        }
+        opaqueData.rewind();
+        return super.toString() + ", opaqueData={" + Arrays.toString(bytes) + "}";
     }
 }

@@ -1,6 +1,7 @@
 package frames;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import static frames.Flags.END_HEADERS;
 import static frames.FrameType.CONTINUATION;
@@ -67,6 +68,13 @@ public class ContinuationFrame extends Frame {
         this.headerBlockFragment = headerBlockFragment;
     }
 
+    /**
+     * Crates a continuation frame with the specified flags, streamId and payload.
+     *
+     * @param flags the flags of this frame.
+     * @param streamId the stream id of this frame.
+     * @param payload the payload of this frame.
+     */
     public ContinuationFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), CONTINUATION, flags);
         this.headerBlockFragment = payload.slice();
@@ -77,5 +85,16 @@ public class ContinuationFrame extends Frame {
         ByteBuffer out = ByteBuffer.allocate(length);
         out.put(headerBlockFragment);
         return out;
+    }
+
+    @Override
+    public String toString() {
+        headerBlockFragment.rewind();
+        byte[] bytes = new byte[headerBlockFragment.remaining()];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = headerBlockFragment.get();
+        }
+        headerBlockFragment.rewind();
+        return super.toString() + ", headerBlockFragment={" + Arrays.toString(bytes) + "}";
     }
 }

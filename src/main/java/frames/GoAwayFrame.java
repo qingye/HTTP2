@@ -1,6 +1,7 @@
 package frames;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import static frames.FrameType.GOAWAY;
 
@@ -50,7 +51,7 @@ import static frames.FrameType.GOAWAY;
  * <pre>
  * {@code
  * +-+-------------------------------------------------------------+
- * |R|                  Last-streams.Stream-ID (31)                        |
+ * |R|                  Last-Stream-ID (31)                        |
  * +-+-------------------------------------------------------------+
  * |                      Error Code (32)                          |
  * +---------------------------------------------------------------+
@@ -162,6 +163,13 @@ public class GoAwayFrame extends Frame {
         this.additionalData = additionalData;
     }
 
+    /**
+     * Crates a goaway frame with the specified flags, streamId and payload.
+     *
+     * @param flags the flags of this frame.
+     * @param streamId the stream id of this frame.
+     * @param payload the payload of this frame.
+     */
     public GoAwayFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), GOAWAY, flags);
         this.lastStreamId = payload.getInt() & 2147483647;
@@ -176,5 +184,16 @@ public class GoAwayFrame extends Frame {
         out.putInt(errorCode.code);
         out.put(additionalData);
         return out;
+    }
+
+    @Override
+    public String toString() {
+        additionalData.rewind();
+        byte[] bytes = new byte[additionalData.remaining()];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = additionalData.get();
+        }
+        additionalData.rewind();
+        return super.toString() + ", lastStreamId=" + lastStreamId + ", errorCode=" + errorCode.message + ", additionalData={" + Arrays.toString(bytes) + "}";
     }
 }

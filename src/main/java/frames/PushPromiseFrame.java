@@ -1,6 +1,7 @@
 package frames;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import static frames.Flags.*;
 import static frames.FrameType.PUSH_PROMISE;
@@ -135,6 +136,13 @@ public class PushPromiseFrame extends Frame {
         // TODO ensure SETTINGS_ENABLE_PUSH is not disabled when sending
     }
 
+    /**
+     * Crates a push promise frame with the specified flags, streamId and payload.
+     *
+     * @param flags the flags of this frame.
+     * @param streamId the stream id of this frame.
+     * @param payload the payload of this frame.
+     */
     public PushPromiseFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), PUSH_PROMISE, flags);
         this.padLength = payload.get();
@@ -153,5 +161,16 @@ public class PushPromiseFrame extends Frame {
         out.put(headerBlockFragment);
         out.put(ByteBuffer.allocate(padLength));
         return out;
+    }
+
+    @Override
+    public String toString() {
+        headerBlockFragment.rewind();
+        byte[] bytes = new byte[headerBlockFragment.remaining()];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = headerBlockFragment.get();
+        }
+        headerBlockFragment.rewind();
+        return super.toString() + ", padLength=" + padLength + ", promisedStreamId=" + promisedStreamId + ", headerBlockFragment={" + Arrays.toString(bytes) + "}";
     }
 }

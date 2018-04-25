@@ -1,6 +1,7 @@
 package frames;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import static frames.ErrorCode.PROTOCOL_ERROR;
 import static frames.Flags.*;
@@ -76,6 +77,13 @@ public class DataFrame extends Frame {
         this(streamId, data, (byte) 0, endStream);
     }
 
+    /**
+     * Crates a data frame with the specified flags, streamId and payload.
+     *
+     * @param flags the flags of this frame.
+     * @param streamId the stream id of this frame.
+     * @param payload the payload of this frame.
+     */
     public DataFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), DATA, flags);
         if (isSet(flags, PADDED)) {
@@ -95,5 +103,16 @@ public class DataFrame extends Frame {
         out.put(data.rewind());
         out.put(ByteBuffer.allocate(padLength));
         return out.flip();
+    }
+
+    @Override
+    public String toString() {
+        data.rewind();
+        byte[] bytes = new byte[data.remaining()];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = data.get();
+        }
+        data.rewind();
+        return super.toString() + ", padLength=" + padLength + ", data={" + Arrays.toString(bytes) + "}";
     }
 }

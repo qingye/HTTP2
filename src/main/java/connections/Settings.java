@@ -58,4 +58,22 @@ public class Settings {
     public int[] values() {
         return values;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder s = new StringBuilder("Settings: [");
+        for (int i = 0; i < values.length; i++) {
+            Setting setting = Setting.values()[i];
+            if (values[i] == UNDEFINED) {
+                s.append(setting.toString()).append("=UNDEFINED");
+            } else if (values[i] == setting.defaultValue) {
+                s.append(setting.toString()).append("=DEFAULT").append("(").append(values[i]).append(")");
+            } else {
+                s.append(setting.toString()).append("=").append(values[i]);
+            }
+            if (i < values.length-1) s.append(", ");
+        }
+        s.append("]");
+        return s.toString();
+    }
 }

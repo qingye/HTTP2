@@ -83,6 +83,13 @@ public class PriorityFrame extends Frame {
         this.weight = weight;
     }
 
+    /**
+     * Crates a priority frame with the specified flags, streamId and payload.
+     *
+     * @param flags the flags of this frame.
+     * @param streamId the stream id of this frame.
+     * @param payload the payload of this frame.
+     */
     public PriorityFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), PRIORITY, flags);
         int next = payload.getInt();
@@ -97,5 +104,10 @@ public class PriorityFrame extends Frame {
         out.putInt(E ? streamDependency & -2147483648 : streamDependency); // -2147483648 is only the first bit
         out.put(weight);
         return out;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", E=" + E + ", streamDependency=" + streamDependency + ", weight=" + weight;
     }
 }

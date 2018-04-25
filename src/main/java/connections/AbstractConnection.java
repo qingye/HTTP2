@@ -16,6 +16,9 @@ import static frames.ErrorCode.FRAME_SIZE_ERROR;
 import static frames.ErrorCode.HTTP_1_1_REQUIRED;
 import static streams.StreamState.*;
 
+/**
+ * An abstract class to use when creating connections.
+ */
 public abstract class AbstractConnection implements ConnectionInterface {
 
     protected Settings settings = Settings.getDefault();
@@ -23,6 +26,7 @@ public abstract class AbstractConnection implements ConnectionInterface {
     protected Map<Integer, Stream> streamMap = new HashMap<>();
     protected Socket socket;
     protected Stream root;
+    protected Thread thread;
 
     /**
      * Creates a connection with a socket.
@@ -36,11 +40,12 @@ public abstract class AbstractConnection implements ConnectionInterface {
 
         try {
             onFirstRequest();
-            Thread t = new ConnectionThread(this);
-            t.start();
+            this.thread = new ConnectionThread(this);
+            this.thread.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     @Override
@@ -48,7 +53,6 @@ public abstract class AbstractConnection implements ConnectionInterface {
         BufferedReader is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
         String s = is.readLine();
-//            while ((s = is.readLine()) == null); // await first message
 
         if (s.equals("PRI * HTTP/2.0")) {
             System.out.println("Client request for HTTP/2.0");
@@ -116,9 +120,15 @@ public abstract class AbstractConnection implements ConnectionInterface {
         }
     }
 
+    /**
+     * Adds the specified stream to the stream map.
+     *
+     * @param s The stream to add to the stream map.
+     */
     public void addStream(Stream s) {
         streamMap.put(s.streamId, s);
     }
+
 
     private boolean isAllowed(Stream s, Frame f) {
         StreamState ss = s.getState();
@@ -145,14 +155,30 @@ public abstract class AbstractConnection implements ConnectionInterface {
         }
     }
 
+    /**
+     * Sends a frame with the stream id specified in the frame.
+     *
+     * @param f The frame to send.
+     * @return False if this frame is not allowed to be sent on the specified stream.
+     * @throws IOException If there is an error sending the frame.
+     */
     public boolean sendFrame(Frame f) throws IOException {
         return sendFrame(streamMap.get(f.streamId), f);
     }
 
+    /**
+     * Sends a frame with the stream id specified in the frame.
+     *
+     * @param f The frame to send.
+     * @param s The stream to send this frame with.
+     * @return False if this frame is not allowed to be sent on the specified stream.
+     * @throws IOException If there is an error sending the frame.
+     */
     public boolean sendFrame(Stream s, Frame f) throws IOException {
         // TODO connection should figure out which frame to send with on its own
         if (isAllowed(s, f)) {
-            ByteBuffer frame = f.bytes(s.streamId);
+            f.streamId = s.streamId;
+            ByteBuffer frame = f.bytes();
             byte[] b = frame.array();
             socket.getOutputStream().write(b);
             socket.getOutputStream().flush();
@@ -164,6 +190,12 @@ public abstract class AbstractConnection implements ConnectionInterface {
         return false;
     }
 
+    /**
+     * Adds a stream and returns it.
+     *
+     * @return the new stream.
+     * @throws IOException if there is an error sending the headers frame to create the stream.
+     */
     public Stream addStream() throws IOException {
         Stream s = new Stream(idIncrement++, root);
         addStream(s);
@@ -187,4 +219,5 @@ public abstract class AbstractConnection implements ConnectionInterface {
     public Socket getSocket() {
         return socket;
     }
+
 }

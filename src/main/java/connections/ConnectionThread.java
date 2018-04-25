@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 
 class ConnectionThread extends Thread {
 
-    public final AbstractConnection connection;
+    private final AbstractConnection connection;
 
     ConnectionThread(AbstractConnection connection) {
         this.connection = connection;

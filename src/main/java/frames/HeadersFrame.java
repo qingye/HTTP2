@@ -1,6 +1,7 @@
 package frames;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import static frames.ErrorCode.PROTOCOL_ERROR;
 import static frames.Flags.*;
@@ -165,6 +166,13 @@ public class HeadersFrame extends Frame {
         this.weight = weight;
     }
 
+    /**
+     * Crates a headers frame with the specified flags, streamId and payload.
+     *
+     * @param flags the flags of this frame.
+     * @param streamId the stream id of this frame.
+     * @param payload the payload of this frame.
+     */
     public HeadersFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), HEADERS, flags);
         if (Flags.isSet(flags, PADDED)) {
@@ -202,5 +210,16 @@ public class HeadersFrame extends Frame {
             out.put(ByteBuffer.allocate(padLength));
         }
         return out;
+    }
+
+    @Override
+    public String toString() {
+        headerBlockFragment.rewind();
+        byte[] bytes = new byte[headerBlockFragment.remaining()];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = headerBlockFragment.get();
+        }
+        headerBlockFragment.rewind();
+        return super.toString() + ", padLength=" + padLength + ", E=" + E + ", streamDependency=" + streamDependency + ", headerBlockFragment={" + Arrays.toString(bytes) + "}";
     }
 }

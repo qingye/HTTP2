@@ -91,6 +91,13 @@ public class WindowUpdateFrame extends Frame {
         this.windowSizeIncrement = windowSizeIncrement;
     }
 
+    /**
+     * Crates a window update frame with the specified flags, streamId and payload.
+     *
+     * @param flags the flags of this frame.
+     * @param streamId the stream id of this frame.
+     * @param payload the payload of this frame.
+     */
     public WindowUpdateFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), WINDOW_UPDATE, flags);
         this.windowSizeIncrement = payload.getInt() & 2147483647;
@@ -101,5 +108,10 @@ public class WindowUpdateFrame extends Frame {
         ByteBuffer out = ByteBuffer.allocate(length);
         out.putInt(windowSizeIncrement);
         return out;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", windowSizeIncrement=" + windowSizeIncrement;
     }
 }

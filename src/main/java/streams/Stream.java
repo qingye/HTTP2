@@ -19,7 +19,7 @@ import static streams.StreamState.OPEN;
  * Recipients process frames in the order they are received.  In
  * particular, the order of HEADERS and DATA frames is semantically
  * significant.</li>
- * <li>Streams are identified by an integer.  streams.Stream identifiers are
+ * <li>Streams are identified by an integer. Stream identifiers are
  * assigned to streams by the endpoint initiating the stream.
  * </ul>
  *
@@ -33,10 +33,23 @@ public class Stream {
     public Stream parent;
     byte weight;
 
+    /**
+     * Creates a stream with the specified stream id and parent.
+     *
+     * @param streamId The stream id of this stream.
+     * @param parent The parent of this stream.
+     */
     public Stream(int streamId, Stream parent) {
         this(streamId, parent, (byte) 1);
     }
 
+    /**
+     * Creates a stream with the specified stream id, parent and weight.
+     *
+     * @param streamId The stream id of this stream.
+     * @param parent The parent of this stream.
+     * @param weight The relative weight of this stream.
+     */
     public Stream(int streamId, Stream parent, byte weight) {
         this.streamId = streamId;
         this.state = OPEN;
@@ -44,23 +57,32 @@ public class Stream {
         this.weight = weight;
     }
 
+    /**
+     * @return the state of this stream.
+     */
     public StreamState getState() {
         return state;
     }
 
-    public void setState(StreamState state) {
-        this.state = state;
+    /**
+     * @param newState the new state of this stream
+     */
+    public void setState(StreamState newState) {
+        this.state = newState;
     }
 
-    public void send(Frame f) {
 
+    /**
+     * @param newParent the new parent of this stream.
+     */
+    public void setParent(Stream newParent) {
+        this.parent = newParent;
     }
 
-    public void setParent(Stream parent) {
-        this.parent = parent;
-    }
-
-    public void setWeight(byte weight) {
-        this.weight = weight;
+    /**
+     * @param newWeight the new relative weight of this stream.
+     */
+    public void setWeight(byte newWeight) {
+        this.weight = newWeight;
     }
 }

@@ -62,6 +62,13 @@ public class RSTStreamFrame extends Frame {
         this.errorCode = errorCode;
     }
 
+    /**
+     * Crates an RST stream frame with the specified flags, streamId and payload.
+     *
+     * @param flags the flags of this frame.
+     * @param streamId the stream id of this frame.
+     * @param payload the payload of this frame.
+     */
     public RSTStreamFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), RST_STREAM, flags);
         this.errorCode = ErrorCode.from(payload.getInt());
@@ -72,5 +79,10 @@ public class RSTStreamFrame extends Frame {
         ByteBuffer out = ByteBuffer.allocate(length);
         out.putInt(errorCode.code);
         return out;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + ", errorCode" + errorCode.message;
     }
 }
