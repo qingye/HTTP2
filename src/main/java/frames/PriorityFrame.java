@@ -11,7 +11,7 @@ import static frames.FrameType.PRIORITY;
  * <pre>
  * {@code
  * +-+-------------------------------------------------------------+
- * |E|                  streams.Stream Dependency (31)             |
+ * |E|                  Stream Dependency (31)             |
  * +-+-------------+-----------------------------------------------+
  * |   Weight (8)  |
  * +-+-------------+
@@ -24,7 +24,7 @@ import static frames.FrameType.PRIORITY;
  * E: A single-bit flag indicating that the stream dependency is
  * exclusive (see Section 5.3).
  * <p>
- * streams.Stream Dependency:  A 31-bit stream identifier for the stream that
+ * Stream Dependency:  A 31-bit stream identifier for the stream that
  * this stream depends on (see Section 5.3).
  * <p>
  * Weight:  An unsigned 8-bit integer representing a priority weight for
@@ -63,7 +63,7 @@ public class PriorityFrame extends Frame {
 
     public final boolean E;
     public final int streamDependency;
-    public final byte weight;
+    public final short weight;
 
     /**
      * Constructs a priority frame
@@ -73,14 +73,14 @@ public class PriorityFrame extends Frame {
      * @param weight           An unsigned 8-bit integer representing a priority weight for the stream.
      *                         Add one to the value to obtain a weight between 1 and 256.
      */
-    public PriorityFrame(int streamId, boolean E, int streamDependency, byte weight) {
+    public PriorityFrame(int streamId, boolean E, int streamDependency, short weight) {
         super(streamId, 5, PRIORITY);
         if (streamDependency < 0) {
             throw new IllegalArgumentException("Invalid stream dependency");
         }
         this.E = E;
         this.streamDependency = streamDependency;
-        this.weight = weight;
+        this.weight = (short) ((weight & 0xff) + 1);
     }
 
     /**
@@ -95,14 +95,14 @@ public class PriorityFrame extends Frame {
         int next = payload.getInt();
         this.E = (next & -2147483648) != 0;
         this.streamDependency = next & 2147483647;
-        this.weight = payload.get();
+        this.weight = (short) ((payload.get() & 0xff) + 1);
     }
 
     @Override
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);
         out.putInt(E ? streamDependency & -2147483648 : streamDependency); // -2147483648 is only the first bit
-        out.put(weight);
+        out.put((byte) (weight-1));
         return out;
     }
 

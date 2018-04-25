@@ -13,7 +13,7 @@ class ConnectionThread extends Thread {
     }
 
 
-    // Taken from https://stackoverflow.com/questions/9666783/java-inputstream-wait-for-data
+    // Based on https://stackoverflow.com/questions/9666783/java-inputstream-wait-for-data
 
     @Override
     public void run() {
@@ -22,15 +22,16 @@ class ConnectionThread extends Thread {
             try {
                 readLength(bb, 9);
                 int length = bb.getInt(0) >>> 8;
-                if (length > bb.capacity())
-                    bb = ByteBuffer.allocateDirect(length);
-                readLength(bb, length);
+
+                readLength(bb, length + 9);
                 bb.flip();
 
-                // process buffer.
-                connection.onReceiveData(bb);
+                if (bb.remaining() > 0) {
+                    // process buffer.
+                    connection.onReceiveData(bb);
+                }
             } catch (IOException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
     }
@@ -38,9 +39,8 @@ class ConnectionThread extends Thread {
     private void readLength(ByteBuffer bb, int length) throws IOException {
 //        bb.clear();
 //        bb.mark();
-        bb.limit(length+9);
+        bb.limit(length);
         InputStream is = connection.getSocket().getInputStream();
-//        System.out.print(new String(is.readAllBytes()));
         int re;
         while (bb.remaining() > 0 && (re = is.read()) >= 0) {
 //            System.out.println(bb.remaining());

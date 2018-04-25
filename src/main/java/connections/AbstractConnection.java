@@ -1,5 +1,6 @@
 package connections;
 
+import com.twitter.hpack.Encoder;
 import frames.*;
 import streams.Stream;
 import streams.StreamState;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,7 +23,7 @@ import static streams.StreamState.*;
  */
 public abstract class AbstractConnection implements ConnectionInterface {
 
-    protected Settings settings = Settings.getDefault();
+    protected ConnectionSettings settings = ConnectionSettings.getDefault();
     protected int idIncrement = 1;
     protected Map<Integer, Stream> streamMap = new HashMap<>();
     protected Socket socket;
@@ -56,7 +58,7 @@ public abstract class AbstractConnection implements ConnectionInterface {
 
         if (s.equals("PRI * HTTP/2.0")) {
             System.out.println("Client request for HTTP/2.0");
-            sendFrame(new SettingsFrame(0, false, Settings.getUndefined()));
+            sendFrame(new SettingsFrame(0, false, ConnectionSettings.getUndefined()));
         } else {
             throw HTTP_1_1_REQUIRED.error();
         }
@@ -175,16 +177,30 @@ public abstract class AbstractConnection implements ConnectionInterface {
      * @throws IOException If there is an error sending the frame.
      */
     public boolean sendFrame(Stream s, Frame f) throws IOException {
-        // TODO connection should figure out which frame to send with on its own
+        // TODO connection should figure out which frame to send with on its own (flow control)
         if (isAllowed(s, f)) {
             f.streamId = s.streamId;
             ByteBuffer frame = f.bytes();
             byte[] b = frame.array();
-            socket.getOutputStream().write(b);
+//            if (f.type == FrameType.HEADERS) {
+//                Encoder encoder = new Encoder(4096);
+//                socket.getOutputStream().write(Arrays.copyOf(b, 9));
+//                byte[] bytes = new byte[b.length - 9];
+//                System.arraycopy(b, 9, bytes, 0, bytes.length);
+//                String string = new String(bytes);
+//                String[] split = string.split("[\\n\\r]+");
+//                for (String s1 : split) {
+//                    String[] s1Split = s1.split(":", 2);
+//                    encoder.encodeHeader(socket.getOutputStream(), s1Split[0].getBytes(), s1Split[1].getBytes(), false);
+//                }
+//            } else {
+                socket.getOutputStream().write(b);
+//            }
             socket.getOutputStream().flush();
 //            while (frame.hasRemaining()) {
 //                socket.getOutputStream().write(frame.get());
 //            }
+            System.out.println("Send: " + f);
             return true;
         }
         return false;
@@ -199,7 +215,7 @@ public abstract class AbstractConnection implements ConnectionInterface {
     public Stream addStream() throws IOException {
         Stream s = new Stream(idIncrement++, root);
         addStream(s);
-        sendFrame(s, new HeadersFrame(s.streamId, (byte) 0, false, s.parent.streamId, (byte) 1, ByteBuffer.allocate(0), true, false));
+        sendFrame(s, new HeadersFrame(s.streamId, false, false, (short) 0, ByteBuffer.allocate(0), false, 0, (short) 256));
         return s;
     }
 

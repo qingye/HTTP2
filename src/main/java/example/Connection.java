@@ -30,16 +30,16 @@ public class Connection extends AbstractConnection {
         System.out.println("Recv: " + hf);
         Stream stream = streamMap.get(hf.streamId);
         if (stream == null) {
-            stream = new Stream(idIncrement++, streamMap.get(hf.streamDependency));
+            stream = new Stream(hf.streamId, streamMap.get(hf.streamDependency));
             addStream(stream);
         }
 
         try {
-            addStream(new Stream(stream.streamId, root));
-            HeadersFrame hah = new HeadersFrame(stream.streamId, true, true, (byte) 0, ByteBuffer.wrap("content-type: text/html\r\n\r\n".getBytes()));
+//            addStream(new Stream(stream.streamId, root));
+            HeadersFrame hah = new HeadersFrame(stream.streamId, false, true, (byte) 0, ByteBuffer.wrap("status : 200\r\naccept-ranges : bytes\r\ncontent-length : 155\r\nContent-Type: text/html;charset=utf-8\r\n\r\n".getBytes()), true, 0, (short) 256);
             sendFrame(hah);
             ByteBuffer bf = ByteBuffer.wrap(Files.readAllBytes(Paths.get("src/main/resources/hello.html")));
-            DataFrame html = new DataFrame(stream.streamId, bf, false);
+            DataFrame html = new DataFrame(stream.streamId, bf, true);
             sendFrame(html);
         } catch (IOException e) {
             e.printStackTrace();

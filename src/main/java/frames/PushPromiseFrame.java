@@ -18,7 +18,7 @@ import static frames.FrameType.PUSH_PROMISE;
  * +---------------+
  * |Pad Length? (8)|
  * +-+-------------+-----------------------------------------------+
- * |R|                  Promised streams.Stream ID (31)            |
+ * |R|                  Promised Stream ID (31)            |
  * +-+-----------------------------+-------------------------------+
  * |                   Header Block Fragment (*)                 ...
  * +---------------------------------------------------------------+
@@ -36,7 +36,7 @@ import static frames.FrameType.PUSH_PROMISE;
  * <p>
  * R: A single reserved bit.
  * <p>
- * Promised streams.Stream ID:  An unsigned 31-bit integer that identifies the
+ * Promised Stream ID:  An unsigned 31-bit integer that identifies the
  * stream that is reserved by the PUSH_PROMISE.  The promised stream
  * identifier MUST be a valid choice for the next stream sent by the
  * sender (see "new stream identifier" in Section 5.1.1).
@@ -114,7 +114,7 @@ import static frames.FrameType.PUSH_PROMISE;
  */
 public class PushPromiseFrame extends Frame {
 
-    public final byte padLength;
+    public final short padLength;
     public final int promisedStreamId;
     public final ByteBuffer headerBlockFragment;
 
@@ -128,9 +128,9 @@ public class PushPromiseFrame extends Frame {
      * @param headerBlockFragment A header block fragment containing request header fields.
      * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
      */
-    public PushPromiseFrame(int streamId, byte padLength, int promisedStreamID, ByteBuffer headerBlockFragment, boolean endHeaders) {
+    public PushPromiseFrame(int streamId, short padLength, int promisedStreamID, ByteBuffer headerBlockFragment, boolean endHeaders) {
         super(streamId, 5 + headerBlockFragment.remaining() + padLength, PUSH_PROMISE, combine((padLength != 0) ? PADDED : 0, (endHeaders ? END_HEADERS : 0)));
-        this.padLength = padLength;
+        this.padLength = (short) (padLength & 0xff);
         this.promisedStreamId = promisedStreamID;
         this.headerBlockFragment = headerBlockFragment;
         // TODO ensure SETTINGS_ENABLE_PUSH is not disabled when sending
@@ -145,7 +145,7 @@ public class PushPromiseFrame extends Frame {
      */
     public PushPromiseFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), PUSH_PROMISE, flags);
-        this.padLength = payload.get();
+        this.padLength = (short) (payload.get() & 0xff);
         this.promisedStreamId = payload.getInt() & 2147483647;
         ByteBuffer slice = payload.slice();
         slice.limit(slice.limit() - padLength);
@@ -156,7 +156,7 @@ public class PushPromiseFrame extends Frame {
     @Override
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);
-        out.put(padLength);
+        out.put((byte) (padLength & 0xff));
         out.putInt(promisedStreamId);
         out.put(headerBlockFragment);
         out.put(ByteBuffer.allocate(padLength));

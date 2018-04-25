@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
  * +---------------+---------------+---------------+
  * |   Type (8)    |   Flag (8)   |
  * +-+-------------+---------------+-------------------------------+
- * |R|                 streams.Stream Identifier (31)              |
+ * |R|                 Stream Identifier (31)              |
  * +=+=============================================================+
  * |                   Frame Payload (0...)                      ...
  * +---------------------------------------------------------------+
@@ -107,6 +107,7 @@ public abstract class Frame {
         out.put((byte) (length & 0xff));
         out.put(type.code);
         out.put(flags);
+        out.putInt(streamId & Integer.MAX_VALUE);
         out.put(payload());
         return out.flip();
     }

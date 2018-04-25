@@ -1,5 +1,7 @@
 package frames;
 
+import com.twitter.hpack.Encoder;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -18,7 +20,7 @@ import static frames.FrameType.HEADERS;
  * +---------------+
  * |Pad Length? (8)|
  * +-+-------------+-----------------------------------------------+
- * |E|                 streams.Stream Dependency? (31)             |
+ * |E|                 Stream Dependency? (31)             |
  * +-+-------------+-----------------------------------------------+
  * |  Weight? (8)  |
  * +-+-------------+-----------------------------------------------+
@@ -40,7 +42,7 @@ import static frames.FrameType.HEADERS;
  * exclusive (see Section 5.3).  This field is only present if the
  * PRIORITY flag is set.
  * <p>
- * streams.Stream Dependency:  A 31-bit stream identifier for the stream that
+ * Stream Dependency:  A 31-bit stream identifier for the stream that
  * this stream depends on (see Section 5.3).  This field is only
  * present if the PRIORITY flag is set.
  * <p>
@@ -78,7 +80,7 @@ import static frames.FrameType.HEADERS;
  * and any padding that it describes are present.
  * <p>
  * PRIORITY (0x20):  When set, bit 5 indicates that the Exclusive Flag
- * (E), streams.Stream Dependency, and Weight fields are present; see
+ * (E), Stream Dependency, and Weight fields are present; see
  * Section 5.3.
  * <p>
  * The payload of a HEADERS frame contains a header block fragment
@@ -110,9 +112,9 @@ import static frames.FrameType.HEADERS;
 public class HeadersFrame extends Frame {
 
     public final int streamDependency;
-    public final byte padLength;
+    public final short padLength;
     public final boolean E;
-    public final byte weight;
+    public final short weight;
     public final ByteBuffer headerBlockFragment;
 
 
@@ -125,13 +127,13 @@ public class HeadersFrame extends Frame {
      * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
      * @param endStream           When set, bit 0 indicates that the header block is the last that the endpoint will send for the identified stream.
      */
-    public HeadersFrame(int streamId, boolean endStream, boolean endHeaders, byte padLength, ByteBuffer headerBlockFragment) {
+    public HeadersFrame(int streamId, boolean endStream, boolean endHeaders, short padLength, ByteBuffer headerBlockFragment) {
         super(streamId, 6 + headerBlockFragment.remaining() + padLength, HEADERS, combine((endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
         if (padLength > length) {
             throw PROTOCOL_ERROR.error();
         }
         this.padLength = padLength;
-        this.headerBlockFragment = headerBlockFragment;
+        this.headerBlockFragment = headerBlockFragment.rewind();
 
         // not included as PRIORITY flag is not set, but needs to be initialized since all variables are final
         this.streamDependency = 0;
@@ -154,13 +156,13 @@ public class HeadersFrame extends Frame {
      * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
      * @param endStream           When set, bit 0 indicates that the header block is the last that the endpoint will send for the identified stream.
      */
-    public HeadersFrame(int streamId, byte padLength, boolean E, int streamDependency, byte weight, ByteBuffer headerBlockFragment, boolean endHeaders, boolean endStream) {
+    public HeadersFrame(int streamId, boolean endStream, boolean endHeaders, short padLength, ByteBuffer headerBlockFragment, boolean E, int streamDependency, short weight) {
         super(streamId, 6 + headerBlockFragment.remaining() + padLength, HEADERS, combine(PRIORITY, (endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
         if (padLength > length) {
             throw PROTOCOL_ERROR.error();
         }
-        this.padLength = padLength;
-        this.headerBlockFragment = headerBlockFragment;
+        this.padLength = (short) (padLength & 0xff);
+        this.headerBlockFragment = headerBlockFragment.rewind();
         this.streamDependency = streamDependency;
         this.E = E;
         this.weight = weight;
@@ -169,9 +171,9 @@ public class HeadersFrame extends Frame {
     /**
      * Crates a headers frame with the specified flags, streamId and payload.
      *
-     * @param flags the flags of this frame.
+     * @param flags    the flags of this frame.
      * @param streamId the stream id of this frame.
-     * @param payload the payload of this frame.
+     * @param payload  the payload of this frame.
      */
     public HeadersFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), HEADERS, flags);
@@ -184,7 +186,7 @@ public class HeadersFrame extends Frame {
             int next = payload.getInt();
             this.E = (next & -2147483648) != 0;
             this.streamDependency = next & 2147483647;
-            this.weight = payload.get();
+            this.weight = (short) ((payload.get() & 0xff) + 1);
         } else {
             this.E = false;
             this.streamDependency = -1;
@@ -199,17 +201,17 @@ public class HeadersFrame extends Frame {
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);
         if (Flags.isSet(this.flags, PADDED)) {
-            out.put(padLength);
+            out.put((byte) padLength);
         }
         if (Flags.isSet(this.flags, PRIORITY)) {
-            out.putInt(E ? streamDependency & -2147483648 : streamDependency); // -2147483648 is only the first bit
-            out.put(weight);
+            out.putInt(E ? streamDependency | -2147483648 : streamDependency); // -2147483648 is only the first bit
+            out.put((byte) ((weight - 1) & 0xff));
         }
         out.put(headerBlockFragment);
         if (Flags.isSet(this.flags, PADDED)) {
             out.put(ByteBuffer.allocate(padLength));
         }
-        return out;
+        return out.flip();
     }
 
     @Override
@@ -220,6 +222,6 @@ public class HeadersFrame extends Frame {
             bytes[i] = headerBlockFragment.get();
         }
         headerBlockFragment.rewind();
-        return super.toString() + ", padLength=" + padLength + ", E=" + E + ", streamDependency=" + streamDependency + ", headerBlockFragment={" + Arrays.toString(bytes) + "}";
+        return super.toString() + ", padLength=" + padLength + ", E=" + E + ", streamDependency=" + streamDependency + ", weight=" + weight + ", headerBlockFragment={" + Arrays.toString(bytes) + "}";
     }
 }

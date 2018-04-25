@@ -9,7 +9,7 @@ import javax.net.ssl.SSLSocket;
 public class Main {
 
     private static final int HTTP_PORT = 443;
-    private static final String KEYSTORE_LOCATION = "C:/Keys/heltNy.jks";
+    private static final String KEYSTORE_LOCATION = "src/main/resources/heltNy.jks";
     private static final String KEYSTORE_PASSWORD = "123456";
 
     public static void main(String[] args) {

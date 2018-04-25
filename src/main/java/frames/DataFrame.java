@@ -44,7 +44,7 @@ import static frames.FrameType.DATA;
  */
 public class DataFrame extends Frame {
 
-    public byte padLength;
+    public short padLength;
     private ByteBuffer data;
 
     /**
@@ -56,14 +56,14 @@ public class DataFrame extends Frame {
      * @param endStream When set, bit 0 indicates that this frame is the last that the endpoint will send for the identified stream.
      *                  Setting this flag causes the stream to enter one of the "half-closed" states or the "closed" state.
      */
-    public DataFrame(int streamId, ByteBuffer data, byte padLength, boolean endStream) {
+    public DataFrame(int streamId, ByteBuffer data, short padLength, boolean endStream) {
         super(streamId, 4 + data.remaining() + padLength, DATA, combine((endStream ? END_STREAM : 0), (padLength == 0) ? 0 : PADDED));
         if (padLength > length) {
             throw PROTOCOL_ERROR.error();
         }
         this.data = data;
         // TODO if a DATA frame is received whose stream is not in "open" or "half-closed (local)" state, the recipient MUST respond with a stream error (Section 5.4.2) of type STREAM_CLOSED.
-        this.padLength = padLength;
+        this.padLength = (short) (padLength & 0xff);
     }
 
     /**
@@ -74,7 +74,7 @@ public class DataFrame extends Frame {
      *                  Setting this flag causes the stream to enter one of the "half-closed" states or the "closed" state.
      */
     public DataFrame(int streamId, ByteBuffer data, boolean endStream) {
-        this(streamId, data, (byte) 0, endStream);
+        this(streamId, data, (short) 0, endStream);
     }
 
     /**
@@ -99,7 +99,7 @@ public class DataFrame extends Frame {
     @Override
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);
-        out.put(padLength);
+        out.put((byte) padLength);
         out.put(data.rewind());
         out.put(ByteBuffer.allocate(padLength));
         return out.flip();

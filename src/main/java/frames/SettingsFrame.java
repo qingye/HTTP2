@@ -1,10 +1,10 @@
 package frames;
 
-import connections.Settings;
+import connections.ConnectionSettings;
 
 import java.nio.ByteBuffer;
 
-import static connections.Settings.UNDEFINED;
+import static connections.ConnectionSettings.UNDEFINED;
 import static frames.Flags.ACK;
 import static frames.FrameType.SETTINGS;
 
@@ -63,7 +63,7 @@ import static frames.FrameType.SETTINGS;
  */
 public class SettingsFrame extends Frame {
 
-    public final Settings settings;
+    public final ConnectionSettings settings;
 
     /**
      * Constructs a settings frame
@@ -71,12 +71,12 @@ public class SettingsFrame extends Frame {
      * @param ack When set, bit 0 indicates that this frame acknowledges receipt and application of the peer's SETTINGS frame.
      *            When this bit is set, the payload of the SETTINGS frame MUST be empty.
      */
-    public SettingsFrame(int streamId, boolean ack, Settings settings) {
+    public SettingsFrame(int streamId, boolean ack, ConnectionSettings settings) {
         super(streamId, findLength(settings), SETTINGS, (ack ? ACK : 0)); // TODO format payload, parameter for settings
         this.settings = settings;
     }
 
-    private static int findLength(Settings settings) {
+    private static int findLength(ConnectionSettings settings) {
         int c = 0;
         for (int i : settings.values()) {
             if (i != UNDEFINED) {
@@ -95,7 +95,7 @@ public class SettingsFrame extends Frame {
      */
     public SettingsFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), SETTINGS, flags);
-        Settings sets = Settings.getUndefined();
+        ConnectionSettings sets = ConnectionSettings.getUndefined();
         while (payload.hasRemaining()) {
             Setting set = Setting.from(payload.getShort());
             int val = payload.getInt();
