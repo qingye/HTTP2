@@ -157,7 +157,7 @@ public class HeadersFrame extends Frame {
      * @param endStream           When set, bit 0 indicates that the header block is the last that the endpoint will send for the identified stream.
      */
     public HeadersFrame(int streamId, boolean endStream, boolean endHeaders, short padLength, ByteBuffer headerBlockFragment, boolean E, int streamDependency, short weight) {
-        super(streamId, ((padLength > 0) ? 1 : 0) + 5 + headerBlockFragment.remaining() + padLength, HEADERS, combine(PRIORITY, (endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
+        super(streamId, ((padLength > 0) ? 1 : 0) + 5 + (compress(headerBlockFragment)).remaining() + padLength, HEADERS, combine(PRIORITY, (endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
         if (padLength > length) {
             throw PROTOCOL_ERROR.error();
         }
@@ -176,9 +176,10 @@ public class HeadersFrame extends Frame {
      * @param payload  the payload of this frame.
      */
     public HeadersFrame(byte flags, int streamId, ByteBuffer payload) {
-        super(streamId, payload.remaining(), HEADERS, flags);
+        super(streamId, 0, HEADERS, flags);
         if (Flags.isSet(flags, PADDED)) {
             this.padLength = payload.get();
+            length++;
         } else {
             this.padLength = 0;
         }
@@ -187,6 +188,7 @@ public class HeadersFrame extends Frame {
             this.E = (next & -2147483648) != 0;
             this.streamDependency = next & 2147483647;
             this.weight = (short) ((payload.get() & 0xff) + 1);
+            length += 5;
         } else {
             this.E = false;
             this.streamDependency = -1;
@@ -198,6 +200,7 @@ public class HeadersFrame extends Frame {
             block[i] = payload.get();
         }
         this.headerBlockFragment = ByteBuffer.wrap(decompress(block).getBytes());
+        this.length += headerBlockFragment.remaining();
     }
 
 
@@ -214,6 +217,8 @@ public class HeadersFrame extends Frame {
 //        out.put(headerBlockFragment);
         out.put(compress(headerBlockFragment));
         if (Flags.isSet(this.flags, PADDED)) {
+            byte[] pad = new byte[padLength];
+            Arrays.fill(pad, (byte) 0xff);
             out.put(ByteBuffer.allocate(padLength));
         }
         headerBlockFragment.rewind();

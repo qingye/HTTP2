@@ -53,7 +53,7 @@ import java.nio.ByteBuffer;
  */
 public abstract class Frame {
 
-    public final int length;
+    public int length;
     public final byte flags;
     public final FrameType type;
     public int streamId;

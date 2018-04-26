@@ -35,15 +35,15 @@ public class Compressor {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        StringBuilder s = new StringBuilder();
-//        for (byte b : os.toByteArray()) {
-//            StringBuilder bin = new StringBuilder(Integer.toBinaryString(b & 0xff));
-//            for (int i = bin.length(); i < 8; i++) {
-//                bin.insert(0, "0");
-//            }
-//            s.append(bin).append(" ");
-//        }
-//        System.out.println(s);
+        StringBuilder s = new StringBuilder();
+        for (byte b : os.toByteArray()) {
+            StringBuilder bin = new StringBuilder(Integer.toBinaryString(b & 0xff));
+            for (int i = bin.length(); i < 8; i++) {
+                bin.insert(0, "0");
+            }
+            s.append(bin).append(" ");
+        }
+        System.out.println(s);
         return ByteBuffer.wrap(os.toByteArray());
     }
 

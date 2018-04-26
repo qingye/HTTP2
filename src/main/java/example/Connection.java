@@ -37,7 +37,7 @@ public class Connection extends AbstractConnection {
 
         try {
 //            addStream(new Stream(stream.streamId, root));
-            String s = ":status:200\r\ncontent-length:155\r\ncontent-type:text/html;charset=utf-8\r\n";
+            String s = ":method:post\r\n:status:200\r\ncontent-length:155\r\ncontent-type:text/html;charset=utf-8\r\n";
             HeadersFrame hah = new HeadersFrame(stream.streamId, false, true, (byte) 0, ByteBuffer.wrap(s.getBytes("UTF-8")), true, 0, (short) 256);
             sendFrame(hah);
             ByteBuffer bf = ByteBuffer.wrap(Files.readAllBytes(Paths.get("src/main/resources/hello.html")));
