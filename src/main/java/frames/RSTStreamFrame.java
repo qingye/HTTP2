@@ -83,6 +83,6 @@ public class RSTStreamFrame extends Frame {
 
     @Override
     public String toString() {
-        return super.toString() + ", errorCode" + errorCode.message;
+        return super.toString() + ", errorCode=" + errorCode.message;
     }
 }

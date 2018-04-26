@@ -1,14 +1,15 @@
 package connections;
 
+import com.twitter.hpack.Decoder;
+import com.twitter.hpack.HeaderListener;
 import frames.*;
 import streams.Stream;
 import streams.StreamState;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -180,7 +181,32 @@ public abstract class AbstractConnection implements ConnectionInterface {
         if (isAllowed(s, f)) {
             f.streamId = s.streamId;
             ByteBuffer frame = f.bytes();
-            byte[] b = frame.array();
+            byte[] b = new byte[frame.remaining()];
+            for (int i = 0; i < b.length; i++) {
+                b[i] = frame.get();
+            }
+
+
+            if (f.type == FrameType.HEADERS) {
+                HeadersFrame hf = (HeadersFrame) f;
+                byte[] bytes = new byte[b.length-9-4-1];
+
+                System.arraycopy(b, 9+4+1, bytes, 0, bytes.length);
+
+                System.out.println(Arrays.toString(bytes));
+
+                Decoder decoder = new Decoder(4096, 4096);
+                decoder.decode(new ByteArrayInputStream(bytes), new HeaderListener() {
+                    @Override
+                    public void addHeader(byte[] name, byte[] value, boolean sensitive) {
+                        System.out.println(new String(name) + ": " + new String(value));
+                    }
+                });
+                decoder.endHeaderBlock();
+            }
+
+            System.out.println(Arrays.toString(b));
+
 
             socket.getOutputStream().write(b);
             socket.getOutputStream().flush();

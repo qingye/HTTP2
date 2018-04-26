@@ -3,16 +3,22 @@ package frames;
 import com.twitter.hpack.Decoder;
 import com.twitter.hpack.Encoder;
 import com.twitter.hpack.HeaderListener;
+import org.eclipse.jetty.http.HttpField;
+import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http.MetaData;
+import org.eclipse.jetty.http2.hpack.HpackEncoder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import static frames.ErrorCode.PROTOCOL_ERROR;
 import static frames.Flags.*;
 import static frames.FrameType.HEADERS;
+import static java.lang.Enum.valueOf;
 
 
 /**
@@ -133,7 +139,7 @@ public class HeadersFrame extends Frame {
      * @param endStream           When set, bit 0 indicates that the header block is the last that the endpoint will send for the identified stream.
      */
     public HeadersFrame(int streamId, boolean endStream, boolean endHeaders, short padLength, ByteBuffer headerBlockFragment) {
-        super(streamId, 6 + headerBlockFragment.remaining() + padLength, HEADERS, combine((endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
+        super(streamId, ((padLength > 0) ? 1 : 0) + headerBlockFragment.remaining() + padLength, HEADERS, combine((endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
         if (padLength > length) {
             throw PROTOCOL_ERROR.error();
         }
@@ -162,7 +168,7 @@ public class HeadersFrame extends Frame {
      * @param endStream           When set, bit 0 indicates that the header block is the last that the endpoint will send for the identified stream.
      */
     public HeadersFrame(int streamId, boolean endStream, boolean endHeaders, short padLength, ByteBuffer headerBlockFragment, boolean E, int streamDependency, short weight) {
-        super(streamId, 6 + headerBlockFragment.remaining() + padLength, HEADERS, combine(PRIORITY, (endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
+        super(streamId, ((padLength > 0) ? 1 : 0) + 5 + headerBlockFragment.remaining() + padLength, HEADERS, combine(PRIORITY, (endStream ? END_STREAM : 0), (endHeaders ? END_HEADERS : 0), ((padLength == 0) ? 0 : PADDED)));
         if (padLength > length) {
             throw PROTOCOL_ERROR.error();
         }
@@ -212,15 +218,17 @@ public class HeadersFrame extends Frame {
             out.putInt(E ? streamDependency | -2147483648 : streamDependency); // -2147483648 is only the first bit
             out.put((byte) ((weight - 1) & 0xff));
         }
-        out.put(headerBlockFragment);
+//        out.put(headerBlockFragment);
+        out.put(compress(headerBlockFragment));
         if (Flags.isSet(this.flags, PADDED)) {
             out.put(ByteBuffer.allocate(padLength));
         }
-
-        return compress(out.flip());
+        headerBlockFragment.rewind();
+        return out.flip();
     }
 
     private ByteBuffer compress(ByteBuffer bb) {
+        bb.rewind();
         Encoder encoder = new Encoder(4096);
         byte[] bytes = new byte[bb.remaining()];
         for (int i = 0; i < bytes.length; i++) {
@@ -233,23 +241,24 @@ public class HeadersFrame extends Frame {
             for (String s1 : split) {
                 String[] s1Split = s1.split(":", 3);
                 if (s1Split.length == 3) encoder.encodeHeader(os, (":" + s1Split[1]).getBytes(), s1Split[2].getBytes(), false);
-                else encoder.encodeHeader(os, s1Split[0].getBytes(), s1Split[1].getBytes(), false);
+                else if (s1Split.length == 2) encoder.encodeHeader(os, s1Split[0].getBytes(), s1Split[1].getBytes(), false);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Decoder decoder = new Decoder(4096, 4096);
-        try {
-            decoder.decode(new ByteArrayInputStream(os.toByteArray()), new HeaderListener() {
-                @Override
-                public void addHeader(byte[] name, byte[] value, boolean sensitive) {
-                    System.out.println(new String(name) + ", " + new String(value));
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println(new String(os.toByteArray()));
+//        Decoder decoder = new Decoder(4096, 4096);
+//        try {
+//            decoder.decode(new ByteArrayInputStream(os.toByteArray()), new HeaderListener() {
+//                @Override
+//                public void addHeader(byte[] name, byte[] value, boolean sensitive) {
+//                    System.out.println(new String(name) + ": " + new String(value));
+//                }
+//            });
+//            decoder.endHeaderBlock();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        System.out.println(new String(os.toByteArray()));
         return ByteBuffer.wrap(os.toByteArray());
     }
 
