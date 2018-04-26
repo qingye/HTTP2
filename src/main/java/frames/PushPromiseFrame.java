@@ -1,7 +1,6 @@
 package frames;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import static frames.Compressor.compress;
 import static frames.Flags.*;
@@ -19,7 +18,7 @@ import static frames.FrameType.PUSH_PROMISE;
  * +---------------+
  * |Pad Length? (8)|
  * +-+-------------+-----------------------------------------------+
- * |R|                  Promised Stream ID (31)            |
+ * |R|                  Promised Stream ID (31)                    |
  * +-+-----------------------------+-------------------------------+
  * |                   Header Block Fragment (*)                 ...
  * +---------------------------------------------------------------+
@@ -132,10 +131,10 @@ public class PushPromiseFrame extends Frame {
      * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
      */
     public PushPromiseFrame(int streamId, short padLength, int promisedStreamID, ByteBuffer headerBlockFragment, boolean endHeaders) {
-        super(streamId, ((padLength > 0) ? 1 : 0) + 4 + headerBlockFragment.remaining() + padLength, PUSH_PROMISE, combine((padLength != 0) ? PADDED : 0, (endHeaders ? END_HEADERS : 0)));
+        super(streamId, ((padLength > 0) ? 1 : 0) + 4 + compress(headerBlockFragment).remaining() + padLength, PUSH_PROMISE, combine((padLength != 0) ? PADDED : 0, (endHeaders ? END_HEADERS : 0)));
         this.padLength = (short) (padLength & 0xff);
         this.promisedStreamId = promisedStreamID;
-        this.headerBlockFragment = headerBlockFragment;
+        this.headerBlockFragment = headerBlockFragment.rewind();
         // TODO ensure SETTINGS_ENABLE_PUSH is not disabled when sending
     }
 
@@ -162,14 +161,10 @@ public class PushPromiseFrame extends Frame {
         if (Flags.isSet(this.flags, PADDED)) {
             out.put((byte) padLength);
         }
-        if (Flags.isSet(this.flags, PRIORITY)) {
-            out.putInt(E ? streamDependency | -2147483648 : streamDependency); // -2147483648 is only the first bit
-            out.put((byte) ((weight - 1) & 0xff));
-        }
+        out.putInt(promisedStreamId & Integer.MAX_VALUE);
+
         out.put(compress(headerBlockFragment));
         if (Flags.isSet(this.flags, PADDED)) {
-            byte[] pad = new byte[padLength];
-            Arrays.fill(pad, (byte) 0xff);
             out.put(ByteBuffer.allocate(padLength));
         }
         headerBlockFragment.rewind();
@@ -184,6 +179,6 @@ public class PushPromiseFrame extends Frame {
             bytes[i] = headerBlockFragment.get();
         }
         headerBlockFragment.rewind();
-        return super.toString() + ", padLength=" + padLength + ", promisedStreamId=" + promisedStreamId + ", headerBlockFragment={" + Arrays.toString(bytes) + "}";
+        return super.toString() + ", padLength=" + padLength + ", promisedStreamId=" + promisedStreamId + ", headerBlockFragment={" + new String(bytes).replaceAll("\\r", "\\\\r").replaceAll("\\n", "\\\\n") + "}";
     }
 }

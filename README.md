@@ -58,4 +58,4 @@ This library uses the [twitter/hpack](https://github.com/twitter/hpack) library 
 
 
 ## Documentation
-Javadoc is available [here](https://rolv-arild.github.io/HTTP2/docs/overview-summary.html).
+Javadoc is available [here](https://rolv-arild.github.io/HTTP2/index.html?overview-summary.html).

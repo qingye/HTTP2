@@ -1,7 +1,6 @@
 package frames;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import static frames.Compressor.compress;
 import static frames.Compressor.decompress;
@@ -182,7 +181,7 @@ public class HeadersFrame extends Frame {
     public HeadersFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, 0, HEADERS, flags);
         if (Flags.isSet(flags, PADDED)) {
-            this.padLength = payload.get();
+            this.padLength = (short) (payload.get() & 0xff);
             length++;
         } else {
             this.padLength = 0;
@@ -198,7 +197,7 @@ public class HeadersFrame extends Frame {
             this.streamDependency = -1;
             this.weight = 0;
         }
-        payload.limit(payload.limit() - (padLength & 0xff));
+        payload.limit(payload.limit() - padLength);
         byte[] block = new byte[payload.remaining()];
         for (int i = 0; i < block.length; i++) {
             block[i] = payload.get();
@@ -221,8 +220,6 @@ public class HeadersFrame extends Frame {
 //        out.put(headerBlockFragment);
         out.put(compress(headerBlockFragment));
         if (Flags.isSet(this.flags, PADDED)) {
-            byte[] pad = new byte[padLength];
-            Arrays.fill(pad, (byte) 0xff);
             out.put(ByteBuffer.allocate(padLength));
         }
         headerBlockFragment.rewind();

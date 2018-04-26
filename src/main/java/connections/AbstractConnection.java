@@ -9,11 +9,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static frames.Compressor.decompress;
 import static frames.ErrorCode.FRAME_SIZE_ERROR;
 import static frames.ErrorCode.HTTP_1_1_REQUIRED;
 import static streams.StreamState.*;
@@ -128,8 +126,9 @@ public abstract class AbstractConnection implements ConnectionInterface {
      *
      * @param s The stream to add to the stream map.
      */
-    public void addStream(Stream s) {
+    public Stream addStream(Stream s) {
         streamMap.put(s.streamId, s);
+        return s;
     }
 
 
@@ -218,12 +217,10 @@ public abstract class AbstractConnection implements ConnectionInterface {
      * Adds a stream and returns it.
      *
      * @return the new stream.
-     * @throws IOException if there is an error sending the headers frame to create the stream.
      */
-    public Stream addStream() throws IOException {
+    public Stream addStream() {
         Stream s = new Stream(idIncrement++, root);
         addStream(s);
-        sendFrame(s, new HeadersFrame(s.streamId, false, false, (short) 0, ByteBuffer.allocate(0), false, 0, (short) 256));
         return s;
     }
 
