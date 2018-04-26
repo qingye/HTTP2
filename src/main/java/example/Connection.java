@@ -48,13 +48,10 @@ public class Connection extends AbstractConnection {
                 DataFrame html = new DataFrame(stream.streamId, bf, true);
                 sendFrame(html);
             } else {
-                System.out.println("ico her");
-                String s = ":status:200\r\ncontent-length:162\r\ncontent-type:text/html\r\n";
-                PushPromiseFrame ppf = new PushPromiseFrame(stream.streamId, (short) 0, addStream(new Stream(idIncrement += idIncrement % 2, root)).streamId, ByteBuffer.wrap(s.getBytes("UTF-8")), true);
-                sendFrame(ppf);
-                ByteBuffer bf = ByteBuffer.wrap(Files.readAllBytes(Paths.get("src/main/resources/hello2.html")));
-                DataFrame html2 = new DataFrame(ppf.promisedStreamId, bf, true);
-                sendFrame(html2);
+                GoAwayFrame bye = new GoAwayFrame(0, stream.streamId, ErrorCode.NO_ERROR, ByteBuffer.allocate(0));
+                sendFrame(bye);
+                this.thread.interrupt();
+                socket.close();
             }
             counter++;
         } catch (IOException e) {

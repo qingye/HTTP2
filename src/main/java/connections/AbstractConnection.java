@@ -53,7 +53,7 @@ public abstract class AbstractConnection implements ConnectionInterface {
         BufferedReader is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
         String s = is.readLine();
-
+        if (s == null) return;
         if (s.equals("PRI * HTTP/2.0")) {
             System.out.println("Client request for HTTP/2.0");
             ConnectionSettings cs = ConnectionSettings.getUndefined();
