@@ -121,6 +121,8 @@ public class HeadersFrame extends Frame {
     /**
      * Constructor to make a headers frame without the PRIORITY flag being set.
      *
+     * @param streamId            A stream identifier expressed as an unsigned 31-bit integer.
+     *                            The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param padLength           An 8-bit field containing the length of the frame padding in units of octets.
      *                            This field is only present if the PADDED flag is set.
      * @param headerBlockFragment A header block fragment.
@@ -144,6 +146,8 @@ public class HeadersFrame extends Frame {
     /**
      * Constructor to make a headers frame with the PRIORITY flag being set.
      *
+     * @param streamId            A stream identifier expressed as an unsigned 31-bit integer.
+     *                            The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param padLength           An 8-bit field containing the length of the frame padding in units of octets.
      *                            This field is only present if the PADDED flag is set.
      * @param E                   A single-bit flag indicating that the stream dependency is exclusive.

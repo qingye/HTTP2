@@ -52,8 +52,10 @@ public class RSTStreamFrame extends Frame {
     public final ErrorCode errorCode;
 
     /**
-     * Constructs an RST stream frame
+     * Constructs an RST stream frame.
      *
+     * @param streamId A stream identifier expressed as an unsigned 31-bit integer.
+     *                 The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param errorCode An unsigned, 32-bit integer identifying the error code (Section 7).
      *                  The error code indicates why the stream is being terminated.
      */

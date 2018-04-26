@@ -66,10 +66,13 @@ public class SettingsFrame extends Frame {
     public final ConnectionSettings settings;
 
     /**
-     * Constructs a settings frame
+     * Constructs a settings frame.
      *
+     * @param streamId A stream identifier expressed as an unsigned 31-bit integer.
+     *                 The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param ack When set, bit 0 indicates that this frame acknowledges receipt and application of the peer's SETTINGS frame.
      *            When this bit is set, the payload of the SETTINGS frame MUST be empty.
+     * @param settings The settings of this settings frame.
      */
     public SettingsFrame(int streamId, boolean ack, ConnectionSettings settings) {
         super(streamId, findLength(settings), SETTINGS, (ack ? ACK : 0)); // TODO format payload, parameter for settings

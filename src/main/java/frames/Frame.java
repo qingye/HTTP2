@@ -82,7 +82,7 @@ public abstract class Frame {
     /**
      * Creates a frame header with no tags.
      *
-     * @param streamId A stream identifier (see Section 5.1.1) expressed as an unsigned 31-bit integer.
+     * @param streamId A stream identifier expressed as an unsigned 31-bit integer.
      *                 The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param length   The length of the frame payload expressed as an unsigned 24-bit integer.
      *                 Values greater than 214 (16,384) MUST NOT be sent unless the receiver has set a larger value for SETTINGS_MAX_FRAME_SIZE.
