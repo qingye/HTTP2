@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Scanner;
 
 public class Connection extends AbstractConnection {
     /**
@@ -35,9 +36,15 @@ public class Connection extends AbstractConnection {
             addStream(stream);
         }
 
+        byte[] b = new byte[hf.headerBlockFragment.remaining()];
+        for (int i = 0; i < b.length; i++) {
+            b[i] = hf.headerBlockFragment.get();
+        }
+
+
         try {
 //            addStream(new Stream(stream.streamId, root));
-            String s = ":method:post\r\n:status:200\r\ncontent-length:155\r\ncontent-type:text/html;charset=utf-8\r\n";
+            String s = ":status:200\r\ncontent-length:152\r\ncontent-type:text/html;charset=utf-8\r\n";
             HeadersFrame hah = new HeadersFrame(stream.streamId, false, true, (byte) 0, ByteBuffer.wrap(s.getBytes("UTF-8")), true, 0, (short) 256);
             sendFrame(hah);
             ByteBuffer bf = ByteBuffer.wrap(Files.readAllBytes(Paths.get("src/main/resources/hello.html")));

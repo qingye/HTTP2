@@ -199,8 +199,8 @@ public class HeadersFrame extends Frame {
         for (int i = 0; i < block.length; i++) {
             block[i] = payload.get();
         }
+        this.length += block.length;
         this.headerBlockFragment = ByteBuffer.wrap(decompress(block).getBytes());
-        this.length += headerBlockFragment.remaining();
     }
 
 

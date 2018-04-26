@@ -21,7 +21,7 @@ public class Compressor {
         for (int i = 0; i < bytes.length; i++) {
             bytes[i] = bb.get();
         }
-        String string = new String(bytes);
+        String string = new String(bytes).replaceAll(" ", "");
         String[] split = string.split("[\\n\\r]+");
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         try {
@@ -35,15 +35,6 @@ public class Compressor {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        StringBuilder s = new StringBuilder();
-        for (byte b : os.toByteArray()) {
-            StringBuilder bin = new StringBuilder(Integer.toBinaryString(b & 0xff));
-            for (int i = bin.length(); i < 8; i++) {
-                bin.insert(0, "0");
-            }
-            s.append(bin).append(" ");
-        }
-        System.out.println(s);
         return ByteBuffer.wrap(os.toByteArray());
     }
 
