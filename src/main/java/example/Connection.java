@@ -36,6 +36,8 @@ public class Connection extends AbstractConnection {
             addStream(stream);
         }
 
+
+
         try {
 //            addStream(new Stream(stream.streamId, root));
             //if(hf.headerBlockFragment.toString().contains("favicon.ico")){

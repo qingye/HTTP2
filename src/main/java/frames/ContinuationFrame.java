@@ -58,6 +58,8 @@ public class ContinuationFrame extends Frame {
     /**
      * Constructs a continuation frame.
      *
+     * @param streamId            A stream identifier expressed as an unsigned 31-bit integer.
+     *                            The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param endHeaders          When set, bit 2 indicates that this frame ends a header block.
      *                            If the END_HEADERS bit is not set, this frame MUST be followed by another CONTINUATION frame.
      *                            A receiver MUST treat the receipt of any other type of frame or a frame on a different
@@ -72,9 +74,9 @@ public class ContinuationFrame extends Frame {
     /**
      * Crates a continuation frame with the specified flags, streamId and payload.
      *
-     * @param flags the flags of this frame.
+     * @param flags    the flags of this frame.
      * @param streamId the stream id of this frame.
-     * @param payload the payload of this frame.
+     * @param payload  the payload of this frame.
      */
     public ContinuationFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), CONTINUATION, flags);

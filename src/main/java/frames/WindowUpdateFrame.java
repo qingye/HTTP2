@@ -80,6 +80,8 @@ public class WindowUpdateFrame extends Frame {
     /**
      * Constructs a window update frame
      *
+     * @param streamId A stream identifier expressed as an unsigned 31-bit integer.
+     *                 The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param windowSizeIncrement An unsigned 31-bit integer indicating the number of octets that the sender can transmit in addition to the existing flow-control window.
      *                            The legal range for the increment to the flow-control window is 1 to 231-1 (2,147,483,647) octets.
      */

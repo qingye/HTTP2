@@ -55,16 +55,25 @@ public class PingFrame extends Frame {
     public final ByteBuffer opaqueData;
 
     /**
-     * Constructs a ping frame
+     * Constructs a ping frame.
      *
-     * @param ack      When set, bit 0 indicates that this PING frame is a PING response.
-     *                 An endpoint MUST set this flag in PING responses. An endpoint MUST NOT respond to PING frames containing this flag.
+     * @param streamId   A stream identifier expressed as an unsigned 31-bit integer.
+     *                   The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
+     * @param ack        When set, bit 0 indicates that this PING frame is a PING response.
+     *                   An endpoint MUST set this flag in PING responses. An endpoint MUST NOT respond to PING frames containing this flag.
+     * @param opaqueData The data of this ping frame.
      */
     public PingFrame(int streamId, boolean ack, ByteBuffer opaqueData) {
         super(streamId, 8, PING, ack ? ACK : 0);
         this.opaqueData = opaqueData;
     }
 
+    /**
+     * Creates a ping frame with random data.
+     *
+     * @param streamId A stream identifier expressed as an unsigned 31-bit integer.
+     *                 The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
+     */
     public PingFrame(int streamId) {
         this(streamId, false, randomData());
     }
@@ -78,9 +87,9 @@ public class PingFrame extends Frame {
     /**
      * Crates a ping frame with the specified flags, streamId and payload.
      *
-     * @param flags the flags of this frame.
+     * @param flags    the flags of this frame.
      * @param streamId the stream id of this frame.
-     * @param payload the payload of this frame.
+     * @param payload  the payload of this frame.
      */
     public PingFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), PING, flags);

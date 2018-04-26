@@ -1,7 +1,6 @@
 package frames;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import static frames.ErrorCode.PROTOCOL_ERROR;
 import static frames.Flags.*;
@@ -50,6 +49,8 @@ public class DataFrame extends Frame {
     /**
      * Constructs a data frame.
      *
+     * @param streamId  A stream identifier expressed as an unsigned 31-bit integer.
+     *                  The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param data      The payload of this data frame.
      * @param padLength An 8-bit field containing the length of the frame padding in units of octets.
      *                  The PADDED flag is set if this parameter is not 0.
@@ -69,6 +70,8 @@ public class DataFrame extends Frame {
     /**
      * Constructs a data frame with no padding.
      *
+     * @param streamId  A stream identifier expressed as an unsigned 31-bit integer.
+     *                  The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param data      The payload of this data frame
      * @param endStream When set, bit 0 indicates that this frame is the last that the endpoint will send for the identified stream.
      *                  Setting this flag causes the stream to enter one of the "half-closed" states or the "closed" state.
@@ -80,9 +83,9 @@ public class DataFrame extends Frame {
     /**
      * Crates a data frame with the specified flags, streamId and payload.
      *
-     * @param flags the flags of this frame.
+     * @param flags    the flags of this frame.
      * @param streamId the stream id of this frame.
-     * @param payload the payload of this frame.
+     * @param payload  the payload of this frame.
      */
     public DataFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), DATA, flags);

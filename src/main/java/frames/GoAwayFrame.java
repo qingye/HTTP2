@@ -1,7 +1,6 @@
 package frames;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import static frames.FrameType.GOAWAY;
 
@@ -149,6 +148,8 @@ public class GoAwayFrame extends Frame {
     /**
      * Constructs a go away frame
      *
+     * @param streamId       A stream identifier expressed as an unsigned 31-bit integer.
+     *                       The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param lastStreamId   Contains the highest-numbered stream identifier for which the sender of the GOAWAY frame might have taken some action on or might yet take action on.
      * @param errorCode      The reason for closing the connection.
      * @param additionalData The payload of this frame. The structure and content of the frame payload is dependent entirely on the frame type.
@@ -166,9 +167,9 @@ public class GoAwayFrame extends Frame {
     /**
      * Crates a goaway frame with the specified flags, streamId and payload.
      *
-     * @param flags the flags of this frame.
+     * @param flags    the flags of this frame.
      * @param streamId the stream id of this frame.
-     * @param payload the payload of this frame.
+     * @param payload  the payload of this frame.
      */
     public GoAwayFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), GOAWAY, flags);

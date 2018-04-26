@@ -68,6 +68,8 @@ public class PriorityFrame extends Frame {
     /**
      * Constructs a priority frame
      *
+     * @param streamId         A stream identifier expressed as an unsigned 31-bit integer.
+     *                         The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param E                A single-bit flag indicating that the stream dependency is exclusive.
      * @param streamDependency A 31-bit stream identifier for the stream that this stream depends on.
      * @param weight           An unsigned 8-bit integer representing a priority weight for the stream.
@@ -86,9 +88,9 @@ public class PriorityFrame extends Frame {
     /**
      * Crates a priority frame with the specified flags, streamId and payload.
      *
-     * @param flags the flags of this frame.
+     * @param flags    the flags of this frame.
      * @param streamId the stream id of this frame.
-     * @param payload the payload of this frame.
+     * @param payload  the payload of this frame.
      */
     public PriorityFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), PRIORITY, flags);
@@ -102,7 +104,7 @@ public class PriorityFrame extends Frame {
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);
         out.putInt(E ? streamDependency & -2147483648 : streamDependency); // -2147483648 is only the first bit
-        out.put((byte) (weight-1));
+        out.put((byte) (weight - 1));
         return out.flip();
     }
 

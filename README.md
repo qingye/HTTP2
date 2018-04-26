@@ -1,7 +1,7 @@
 # HTTP2
 A server HTTP2 library
 
-Based on standards by the Internet Engineering Task Force (IETF), specified here: https://tools.ietf.org/html/rfc7540
+Based on standards by the Internet Engineering Task Force (IETF), specified [here](https://tools.ietf.org/html/rfc7540).
 
 Disclaimer: This is not in any way a complete or reliable library, and should not be used for anything important.
 
@@ -42,4 +42,11 @@ if at all, faster than HTTP/1.1, and less secure.
 The _example_ package includes an example of the usage of this library. 
 It is a simple server that creates connections and shows a simple HTML document in the browser.
 
-## 
+## Dependencies
+This library uses the [twitter/hpack](https://github.com/twitter/hpack) library for HPACK compression of headers. 
+
+## Installation
+
+
+## Documentation
+Javadoc is available [here](https://rolv-arild.github.io/HTTP2/docs/overview-summary.html).

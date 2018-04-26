@@ -120,8 +120,10 @@ public class PushPromiseFrame extends Frame {
     public final ByteBuffer headerBlockFragment;
 
     /**
-     * Constructs a push promise frame
+     * Constructs a push promise frame.
      *
+     * @param streamId            A stream identifier expressed as an unsigned 31-bit integer.
+     *                            The value 0x0 is reserved for frames that are associated with the connection as a whole as opposed to an individual stream.
      * @param padLength           An 8-bit field containing the length of the frame padding in units of octets.
      *                            This field is only present if the PADDED flag is set.
      * @param promisedStreamID    An unsigned 31-bit integer that identifies the stream that is reserved by the PUSH_PROMISE.
