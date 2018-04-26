@@ -3,6 +3,7 @@ package frames;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import static frames.Compressor.compress;
 import static frames.Flags.*;
 import static frames.FrameType.PUSH_PROMISE;
 
@@ -158,10 +159,20 @@ public class PushPromiseFrame extends Frame {
     @Override
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);
-        out.put((byte) (padLength & 0xff));
-        out.putInt(promisedStreamId);
-        out.put(headerBlockFragment);
-        out.put(ByteBuffer.allocate(padLength));
+        if (Flags.isSet(this.flags, PADDED)) {
+            out.put((byte) padLength);
+        }
+        if (Flags.isSet(this.flags, PRIORITY)) {
+            out.putInt(E ? streamDependency | -2147483648 : streamDependency); // -2147483648 is only the first bit
+            out.put((byte) ((weight - 1) & 0xff));
+        }
+        out.put(compress(headerBlockFragment));
+        if (Flags.isSet(this.flags, PADDED)) {
+            byte[] pad = new byte[padLength];
+            Arrays.fill(pad, (byte) 0xff);
+            out.put(ByteBuffer.allocate(padLength));
+        }
+        headerBlockFragment.rewind();
         return out.flip();
     }
 

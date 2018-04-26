@@ -10,9 +10,9 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Scanner;
 
 public class Connection extends AbstractConnection {
+    int counter = 0;
     /**
      * Creates a connection with a socket.
      *
@@ -36,20 +36,29 @@ public class Connection extends AbstractConnection {
             addStream(stream);
         }
 
-        byte[] b = new byte[hf.headerBlockFragment.remaining()];
-        for (int i = 0; i < b.length; i++) {
-            b[i] = hf.headerBlockFragment.get();
-        }
 
 
         try {
 //            addStream(new Stream(stream.streamId, root));
-            String s = ":status:200\r\ncontent-length:152\r\ncontent-type:text/html;charset=utf-8\r\n";
-            HeadersFrame hah = new HeadersFrame(stream.streamId, false, true, (byte) 0, ByteBuffer.wrap(s.getBytes("UTF-8")), true, 0, (short) 256);
-            sendFrame(hah);
-            ByteBuffer bf = ByteBuffer.wrap(Files.readAllBytes(Paths.get("src/main/resources/hello.html")));
-            DataFrame html = new DataFrame(stream.streamId, bf, true);
-            sendFrame(html);
+            //if(hf.headerBlockFragment.toString().contains("favicon.ico")){
+            if(counter == 1){
+                counter++;
+                System.out.println("ico her");
+                String s = ":status:200\r\ncontent-length:15087\r\ncontent-type:image/png\r\n";
+                HeadersFrame hah = new HeadersFrame(stream.streamId, false, true, (byte) 0, ByteBuffer.wrap(s.getBytes("UTF-8")), true, 0, (short) 256);
+                sendFrame(hah);
+                ByteBuffer bf = ByteBuffer.wrap(Files.readAllBytes(Paths.get("src/main/resources/favicon.png")));
+                DataFrame ico = new DataFrame(stream.streamId, bf, true);
+                sendFrame(ico);
+            }else{
+                counter++;
+                String s = ":status:200\r\ncontent-length:155\r\ncontent-type:text/html;charset=utf-8\r\n";
+                HeadersFrame hah = new HeadersFrame(stream.streamId, false, true, (byte) 0, ByteBuffer.wrap(s.getBytes("UTF-8")), true, 0, (short) 256);
+                sendFrame(hah);
+                ByteBuffer bf = ByteBuffer.wrap(Files.readAllBytes(Paths.get("src/main/resources/hello.html")));
+                DataFrame html = new DataFrame(stream.streamId, bf, true);
+                sendFrame(html);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

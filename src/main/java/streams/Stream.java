@@ -28,7 +28,7 @@ import static streams.StreamState.OPEN;
  */
 public class Stream {
 
-    public int streamId;
+    public int streamId = 0;
     StreamState state;
     public Stream parent;
     byte weight;
