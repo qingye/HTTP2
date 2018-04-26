@@ -2,11 +2,11 @@ package frames;
 
 import java.nio.ByteBuffer;
 
-import static frames.Compressor.compress;
-import static frames.Compressor.decompress;
 import static frames.ErrorCode.PROTOCOL_ERROR;
 import static frames.Flags.*;
 import static frames.FrameType.HEADERS;
+import static frames.HeaderCompressor.compress;
+import static frames.HeaderCompressor.decompress;
 
 
 /**

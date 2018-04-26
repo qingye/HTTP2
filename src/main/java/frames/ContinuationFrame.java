@@ -3,9 +3,9 @@ package frames;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import static frames.Compressor.compress;
 import static frames.Flags.END_HEADERS;
 import static frames.FrameType.CONTINUATION;
+import static frames.HeaderCompressor.compress;
 
 /**
  * The CONTINUATION frame (type=0x9) is used to continue a sequence of

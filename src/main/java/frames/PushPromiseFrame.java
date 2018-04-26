@@ -2,9 +2,9 @@ package frames;
 
 import java.nio.ByteBuffer;
 
-import static frames.Compressor.compress;
 import static frames.Flags.*;
 import static frames.FrameType.PUSH_PROMISE;
+import static frames.HeaderCompressor.compress;
 
 /**
  * The PUSH_PROMISE frame (type=0x5) is used to notify the peer endpoint

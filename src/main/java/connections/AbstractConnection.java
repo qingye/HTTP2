@@ -43,7 +43,7 @@ public abstract class AbstractConnection implements ConnectionInterface {
             this.thread = new ConnectionThread(this);
             this.thread.start();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Connection failure");
         }
 
     }
@@ -125,6 +125,7 @@ public abstract class AbstractConnection implements ConnectionInterface {
      * Adds the specified stream to the stream map.
      *
      * @param s The stream to add to the stream map.
+     * @return s.
      */
     public Stream addStream(Stream s) {
         streamMap.put(s.streamId, s);

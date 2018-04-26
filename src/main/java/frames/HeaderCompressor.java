@@ -7,13 +7,21 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
-public class Compressor {
+/**
+ * Compresses and decompresses headers.
+ */
+public class HeaderCompressor {
 
-    private Compressor() {
+    private HeaderCompressor() {
     }
 
+    /**
+     * Compresses a byte buffer with HPACK.
+     *
+     * @param bb the byte buffer to compress.
+     * @return a compressed version of the byte buffer.
+     */
     public static ByteBuffer compress(ByteBuffer bb) {
         bb.rewind();
         Encoder encoder = new Encoder(4096);
@@ -38,18 +46,26 @@ public class Compressor {
         return ByteBuffer.wrap(os.toByteArray());
     }
 
+    /**
+     * Decompresses a byte array.
+     *
+     * @param b the byte array to decompress.
+     * @return the decompressed string.
+     */
     public static String decompress(byte[] b) {
         final String[] s = {""};
         Decoder decoder = new Decoder(4096, 4096);
+        ByteArrayInputStream baos = new ByteArrayInputStream(b);
         try {
             decoder.decode(
-                    new ByteArrayInputStream(b),
+                    baos,
                     (name, value, sensitive)
                             -> s[0] += new String(name) + ": " + new String(value) + "\r\n"
             );
             decoder.endHeaderBlock();
+            baos.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error decoding header");
         }
         return s[0];
     }

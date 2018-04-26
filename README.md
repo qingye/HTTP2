@@ -53,7 +53,7 @@ This library uses the [twitter/hpack](https://github.com/twitter/hpack) library 
 
 ## Installation
 1. Clone this repository
-2. Install java version 9 or later. Tested on java 10.
+2. Install Java version 10 or later.
 2. Install maven and run maven install in the HTTP/2 project folder
 
 

@@ -1,15 +1,15 @@
-typeSearchIndex = [{"p": "connections", "l": "AbstractConnection"}, {"p": "frames", "l": "Compressor"}, {
+typeSearchIndex = [{"p": "connections", "l": "AbstractConnection"}, {
     "p": "example",
     "l": "Connection"
 }, {"p": "connections", "l": "ConnectionInterface"}, {"p": "connections", "l": "ConnectionSettings"}, {
     "p": "frames",
     "l": "ContinuationFrame"
-}, {"p": "frames", "l": "DataFrame"}, {"p": "example", "l": "EchoServer"}, {
+}, {"p": "frames", "l": "DataFrame"}, {"p": "frames", "l": "ErrorCode"}, {"p": "frames", "l": "Flags"}, {
     "p": "frames",
-    "l": "ErrorCode"
-}, {"p": "frames", "l": "Flags"}, {"p": "frames", "l": "Frame"}, {"p": "frames", "l": "FrameType"}, {
+    "l": "Frame"
+}, {"p": "frames", "l": "FrameType"}, {"p": "frames", "l": "GoAwayFrame"}, {
     "p": "frames",
-    "l": "GoAwayFrame"
+    "l": "HeaderCompressor"
 }, {"p": "frames", "l": "HeadersFrame"}, {"p": "example", "l": "Main"}, {
     "p": "frames",
     "l": "PingFrame"
