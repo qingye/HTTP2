@@ -31,7 +31,7 @@ class ConnectionThread extends Thread {
                     connection.onReceiveData(bb);
                 }
             } catch (IOException e) {
-//                e.printStackTrace();
+                e.printStackTrace();
             }
         }
     }

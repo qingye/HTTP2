@@ -3,6 +3,7 @@ package frames;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import static frames.Compressor.compress;
 import static frames.Flags.END_HEADERS;
 import static frames.FrameType.CONTINUATION;
 
@@ -83,8 +84,8 @@ public class ContinuationFrame extends Frame {
     @Override
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);
-        out.put(headerBlockFragment);
-        return out;
+        out.put(compress(headerBlockFragment));
+        return out.flip();
     }
 
     @Override

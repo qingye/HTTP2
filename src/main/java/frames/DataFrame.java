@@ -57,7 +57,7 @@ public class DataFrame extends Frame {
      *                  Setting this flag causes the stream to enter one of the "half-closed" states or the "closed" state.
      */
     public DataFrame(int streamId, ByteBuffer data, short padLength, boolean endStream) {
-        super(streamId, 4 + data.remaining() + padLength, DATA, combine((endStream ? END_STREAM : 0), (padLength == 0) ? 0 : PADDED));
+        super(streamId, ((padLength == 0) ? 1 : 0) + data.remaining() + padLength, DATA, combine((endStream ? END_STREAM : 0), (padLength == 0) ? 0 : PADDED));
         if (padLength > length) {
             throw PROTOCOL_ERROR.error();
         }
@@ -113,6 +113,6 @@ public class DataFrame extends Frame {
             bytes[i] = data.get();
         }
         data.rewind();
-        return super.toString() + ", padLength=" + padLength + ", data={" + Arrays.toString(bytes) + "}";
+        return super.toString() + ", padLength=" + padLength + ", data={" + new String(bytes).replaceAll("\\n", "\\\\n").replaceAll("\\r", "\\\\r") + "}";
     }
 }

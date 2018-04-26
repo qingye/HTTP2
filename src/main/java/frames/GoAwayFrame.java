@@ -183,7 +183,7 @@ public class GoAwayFrame extends Frame {
         out.putInt(lastStreamId);
         out.putInt(errorCode.code);
         out.put(additionalData);
-        return out;
+        return out.flip();
     }
 
     @Override
@@ -194,6 +194,6 @@ public class GoAwayFrame extends Frame {
             bytes[i] = additionalData.get();
         }
         additionalData.rewind();
-        return super.toString() + ", lastStreamId=" + lastStreamId + ", errorCode=" + errorCode.message + ", additionalData={" + Arrays.toString(bytes) + "}";
+        return super.toString() + ", lastStreamId=" + lastStreamId + ", errorCode=" + errorCode.message + ", additionalData={" + new String(bytes) + "}";
     }
 }

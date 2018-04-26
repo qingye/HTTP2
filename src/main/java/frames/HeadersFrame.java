@@ -1,24 +1,13 @@
 package frames;
 
-import com.twitter.hpack.Decoder;
-import com.twitter.hpack.Encoder;
-import com.twitter.hpack.HeaderListener;
-import org.eclipse.jetty.http.HttpField;
-import org.eclipse.jetty.http.HttpHeader;
-import org.eclipse.jetty.http.MetaData;
-import org.eclipse.jetty.http2.hpack.HpackEncoder;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import static frames.Compressor.compress;
+import static frames.Compressor.decompress;
 import static frames.ErrorCode.PROTOCOL_ERROR;
 import static frames.Flags.*;
 import static frames.FrameType.HEADERS;
-import static java.lang.Enum.valueOf;
 
 
 /**
@@ -204,7 +193,11 @@ public class HeadersFrame extends Frame {
             this.weight = 0;
         }
         payload.limit(payload.limit() - (padLength & 0xff));
-        this.headerBlockFragment = payload.slice();
+        byte[] block = new byte[payload.remaining()];
+        for (int i = 0; i < block.length; i++) {
+            block[i] = payload.get();
+        }
+        this.headerBlockFragment = ByteBuffer.wrap(decompress(block).getBytes());
     }
 
 
@@ -227,41 +220,6 @@ public class HeadersFrame extends Frame {
         return out.flip();
     }
 
-    private ByteBuffer compress(ByteBuffer bb) {
-        bb.rewind();
-        Encoder encoder = new Encoder(4096);
-        byte[] bytes = new byte[bb.remaining()];
-        for (int i = 0; i < bytes.length; i++) {
-            bytes[i] = bb.get();
-        }
-        String string = new String(bytes);
-        String[] split = string.split("[\\n\\r]+");
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        try {
-            for (String s1 : split) {
-                String[] s1Split = s1.split(":", 3);
-                if (s1Split.length == 3) encoder.encodeHeader(os, (":" + s1Split[1]).getBytes(), s1Split[2].getBytes(), false);
-                else if (s1Split.length == 2) encoder.encodeHeader(os, s1Split[0].getBytes(), s1Split[1].getBytes(), false);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-//        Decoder decoder = new Decoder(4096, 4096);
-//        try {
-//            decoder.decode(new ByteArrayInputStream(os.toByteArray()), new HeaderListener() {
-//                @Override
-//                public void addHeader(byte[] name, byte[] value, boolean sensitive) {
-//                    System.out.println(new String(name) + ": " + new String(value));
-//                }
-//            });
-//            decoder.endHeaderBlock();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        System.out.println(new String(os.toByteArray()));
-        return ByteBuffer.wrap(os.toByteArray());
-    }
-
     @Override
     public String toString() {
         headerBlockFragment.rewind();
@@ -270,6 +228,6 @@ public class HeadersFrame extends Frame {
             bytes[i] = headerBlockFragment.get();
         }
         headerBlockFragment.rewind();
-        return super.toString() + ", padLength=" + padLength + ", E=" + E + ", streamDependency=" + streamDependency + ", weight=" + weight + ", headerBlockFragment={" + Arrays.toString(bytes) + "}";
+        return super.toString() + ", padLength=" + padLength + ", E=" + E + ", streamDependency=" + streamDependency + ", weight=" + weight + ", headerBlockFragment={" + new String(bytes).replaceAll("\\r", "\\\\r").replaceAll("\\n", "\\\\n") + "}";
     }
 }

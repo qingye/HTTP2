@@ -1,18 +1,19 @@
 package connections;
 
-import com.twitter.hpack.Decoder;
-import com.twitter.hpack.HeaderListener;
 import frames.*;
 import streams.Stream;
 import streams.StreamState;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static frames.Compressor.decompress;
 import static frames.ErrorCode.FRAME_SIZE_ERROR;
 import static frames.ErrorCode.HTTP_1_1_REQUIRED;
 import static streams.StreamState.*;
@@ -149,7 +150,7 @@ public abstract class AbstractConnection implements ConnectionInterface {
             case GOAWAY:
                 return s.streamId == 0;
             case PUSH_PROMISE:
-                return ss == OPEN || ss == HALF_CLOSED_LOCAL; // TODO check settings
+                return settings.valueOf(Setting.SETTINGS_ENABLE_PUSH) != 0 && s.streamId != 0 && (ss == OPEN || ss == HALF_CLOSED_LOCAL);
             case WINDOW_UPDATE:
                 return true;
             default:
@@ -189,23 +190,17 @@ public abstract class AbstractConnection implements ConnectionInterface {
 
             if (f.type == FrameType.HEADERS) {
                 HeadersFrame hf = (HeadersFrame) f;
-                byte[] bytes = new byte[b.length-9-4-1];
+                byte[] bytes = new byte[b.length - 9 - 4 - 1];
 
-                System.arraycopy(b, 9+4+1, bytes, 0, bytes.length);
+                System.arraycopy(b, 9 + 4 + 1, bytes, 0, bytes.length);
 
-                System.out.println(Arrays.toString(bytes));
+//                System.out.println(Arrays.toString(b));
+//                System.out.println(Arrays.toString(bytes));
 
-                Decoder decoder = new Decoder(4096, 4096);
-                decoder.decode(new ByteArrayInputStream(bytes), new HeaderListener() {
-                    @Override
-                    public void addHeader(byte[] name, byte[] value, boolean sensitive) {
-                        System.out.println(new String(name) + ": " + new String(value));
-                    }
-                });
-                decoder.endHeaderBlock();
+//                System.out.println(decompress(bytes));
             }
 
-            System.out.println(Arrays.toString(b));
+//            System.out.println(Arrays.toString(b));
 
 
             socket.getOutputStream().write(b);

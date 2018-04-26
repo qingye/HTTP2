@@ -78,7 +78,7 @@ public class RSTStreamFrame extends Frame {
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);
         out.putInt(errorCode.code);
-        return out;
+        return out.flip();
     }
 
     @Override

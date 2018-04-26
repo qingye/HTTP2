@@ -1,6 +1,7 @@
 package example;
 
 import connections.AbstractConnection;
+import connections.ConnectionSettings;
 import frames.*;
 import streams.Stream;
 
@@ -36,7 +37,7 @@ public class Connection extends AbstractConnection {
 
         try {
 //            addStream(new Stream(stream.streamId, root));
-            String s = ":status:200\r\ncontent-length:155\r\ncontent-type:text/html;charset=utf-8";
+            String s = ":status:200\r\ncontent-length:155\r\ncontent-type:text/html;charset=utf-8\r\n";
             HeadersFrame hah = new HeadersFrame(stream.streamId, false, true, (byte) 0, ByteBuffer.wrap(s.getBytes("UTF-8")), true, 0, (short) 256);
             sendFrame(hah);
             ByteBuffer bf = ByteBuffer.wrap(Files.readAllBytes(Paths.get("src/main/resources/hello.html")));
@@ -62,6 +63,11 @@ public class Connection extends AbstractConnection {
         System.out.println("Recv: " + sf);
         if (!Flags.isSet(sf.flags, Flags.ACK)) {
             this.settings.setSettings(sf.settings);
+            try {
+                sendFrame(root, new SettingsFrame(0, true, ConnectionSettings.getUndefined()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

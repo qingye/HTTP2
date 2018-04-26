@@ -129,7 +129,7 @@ public class PushPromiseFrame extends Frame {
      * @param endHeaders          When set, bit 2 indicates that this frame contains an entire header block and is not followed by any CONTINUATION frames.
      */
     public PushPromiseFrame(int streamId, short padLength, int promisedStreamID, ByteBuffer headerBlockFragment, boolean endHeaders) {
-        super(streamId, 5 + headerBlockFragment.remaining() + padLength, PUSH_PROMISE, combine((padLength != 0) ? PADDED : 0, (endHeaders ? END_HEADERS : 0)));
+        super(streamId, ((padLength > 0) ? 1 : 0) + 4 + headerBlockFragment.remaining() + padLength, PUSH_PROMISE, combine((padLength != 0) ? PADDED : 0, (endHeaders ? END_HEADERS : 0)));
         this.padLength = (short) (padLength & 0xff);
         this.promisedStreamId = promisedStreamID;
         this.headerBlockFragment = headerBlockFragment;
@@ -139,9 +139,9 @@ public class PushPromiseFrame extends Frame {
     /**
      * Crates a push promise frame with the specified flags, streamId and payload.
      *
-     * @param flags the flags of this frame.
+     * @param flags    the flags of this frame.
      * @param streamId the stream id of this frame.
-     * @param payload the payload of this frame.
+     * @param payload  the payload of this frame.
      */
     public PushPromiseFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), PUSH_PROMISE, flags);
@@ -160,7 +160,7 @@ public class PushPromiseFrame extends Frame {
         out.putInt(promisedStreamId);
         out.put(headerBlockFragment);
         out.put(ByteBuffer.allocate(padLength));
-        return out;
+        return out.flip();
     }
 
     @Override

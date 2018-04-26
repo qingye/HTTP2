@@ -103,7 +103,7 @@ public class PriorityFrame extends Frame {
         ByteBuffer out = ByteBuffer.allocate(length);
         out.putInt(E ? streamDependency & -2147483648 : streamDependency); // -2147483648 is only the first bit
         out.put((byte) (weight-1));
-        return out;
+        return out.flip();
     }
 
     @Override

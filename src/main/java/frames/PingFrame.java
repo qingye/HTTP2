@@ -63,7 +63,16 @@ public class PingFrame extends Frame {
     public PingFrame(int streamId, boolean ack, ByteBuffer opaqueData) {
         super(streamId, 8, PING, ack ? ACK : 0);
         this.opaqueData = opaqueData;
-        // TODO check that length of payload is 8 bytes
+    }
+
+    public PingFrame(int streamId) {
+        this(streamId, false, randomData());
+    }
+
+    private static ByteBuffer randomData() {
+        byte[] bytes = new byte[8];
+        new Random().nextBytes(bytes);
+        return ByteBuffer.wrap(bytes);
     }
 
     /**
@@ -76,17 +85,14 @@ public class PingFrame extends Frame {
     public PingFrame(byte flags, int streamId, ByteBuffer payload) {
         super(streamId, payload.remaining(), PING, flags);
         this.opaqueData = payload.rewind();
-        // TODO parse payload
     }
 
 
     @Override
     public ByteBuffer payload() {
         ByteBuffer out = ByteBuffer.allocate(length);
-        byte[] randomBytes = new byte[8];
-        new Random().nextBytes(randomBytes);
-        out.put(randomBytes);
-        return out;
+        out.put(opaqueData);
+        return out.flip();
     }
 
     @Override

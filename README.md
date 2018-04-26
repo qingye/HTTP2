@@ -30,13 +30,12 @@ This library contains the following:
 ## Future work
 There are a number of important HTTP/2 functionalities missing from this library, such as
 * Frame pushing
-* Header compression
 * Flow control
 * Various security measures
 
 These are some of the biggest improvements that HTTP/2 has over HTTP/1.1,
 meaning that although we have technically implemented HTTP/2, it is not much, 
-if at all, faster than HTTP/1.1, and way less safe.
+if at all, faster than HTTP/1.1, and less secure.
 
 
 ## Example
