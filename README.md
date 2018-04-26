@@ -9,6 +9,9 @@ Disclaimer: This is not in any way a complete or reliable library, and should no
 This library was developed as a school project for NTNU Trondheim. 
 It is designed to implement very basic HTTP/2 functionality, and includes an example of usage.
 The example uses HTTP/2 over TLS, but the library can in theory be used with other protocols.
+To use HTTP/2 over TLS you will need a certificate. For testing we have used a self signed certificate. 
+This should not be used in real applications, as it is not secure, but for testing purposes it is good enough.
+The certificate we have used is attached in the resources folder.
 
 ## Functionality
 This library contains the following:
